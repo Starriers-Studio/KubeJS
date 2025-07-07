@@ -6,9 +6,9 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.latvian.mods.kubejs.recipe.viewer.AddInformationKubeEvent;
 import dev.latvian.mods.kubejs.recipe.viewer.RecipeViewerEntryType;
 import dev.latvian.mods.rhino.Context;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 
 import java.util.List;
 

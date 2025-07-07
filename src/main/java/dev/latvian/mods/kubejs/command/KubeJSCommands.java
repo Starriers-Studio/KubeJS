@@ -28,6 +28,9 @@ import dev.latvian.mods.kubejs.server.BasicCommandKubeEvent;
 import dev.latvian.mods.kubejs.server.DataExport;
 import dev.latvian.mods.kubejs.util.JsonUtils;
 import dev.latvian.mods.kubejs.web.LocalWebServer;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
+import me.textrue.kubejs.fabric.thirdparty.mixin.MinecraftServerAccessor;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -47,8 +50,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -209,7 +210,7 @@ public class KubeJSCommands {
 					.then(PersistentDataCommands.addPersistentDataCommands(Commands.argument("entity", EntityArgument.entities()), ctx -> EntityArgument.getEntities(ctx, "entity"))))
 			);
 
-		if (!FMLLoader.isProduction()) {
+		if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
 			cmd.then(Commands.literal("eval")
 				.requires(spOrOP)
 				.then(Commands.argument("code", StringArgumentType.greedyString())
@@ -305,7 +306,7 @@ public class KubeJSCommands {
 	private static int errors(CommandSourceStack source, ScriptType type) throws CommandSyntaxException {
 		if (type == ScriptType.CLIENT) {
 			var player = source.getPlayerOrException();
-			PacketDistributor.sendToPlayer(player, new DisplayClientErrorsPayload());
+			NetworkHelper.sendToPlayer(player, new DisplayClientErrorsPayload());
 			return 1;
 		}
 
@@ -318,7 +319,7 @@ public class KubeJSCommands {
 		var errors = new ArrayList<>(type.console.errors);
 		var warnings = new ArrayList<>(type.console.warnings);
 		player.sendSystemMessage(Component.literal("You need KubeJS on client side!").withStyle(ChatFormatting.RED), true);
-		PacketDistributor.sendToPlayer(player, new DisplayServerErrorsPayload(type.ordinal(), errors, warnings));
+		NetworkHelper.sendToPlayer(player, new DisplayServerErrorsPayload(type.ordinal(), errors, warnings));
 
 		// FIXME
 		/*
@@ -361,12 +362,12 @@ public class KubeJSCommands {
 	private static int reloadStartup(CommandSourceStack source) {
 		KubeJS.getStartupScriptManager().reload();
 		source.sendSystemMessage(Component.literal("Done!"));
-		PacketDistributor.sendToAllPlayers(new ReloadStartupScriptsPayload(source.getServer().isDedicatedServer()));
+		NetworkHelper.sendToAllPlayers(new ReloadStartupScriptsPayload(source.getServer().isDedicatedServer()));
 		return 1;
 	}
 
 	private static int reloadServer(CommandSourceStack source) {
-		var resources = source.getServer().getServerResources();
+		var resources = ((MinecraftServerAccessor) source.getServer()).getServerResources();
 		resources.managers().kjs$getServerScriptManager().reload();
 		source.sendSuccess(() -> Component.literal("Done! To reload recipes, tags, loot tables and other datapack things, run ")
 				.append(Component.literal("'/reload'")
@@ -548,13 +549,13 @@ public class KubeJSCommands {
 	}
 
 	private static int eval(CommandSourceStack source, String code) {
-		var cx = (KubeJSContext) source.getServer().getServerResources().managers().kjs$getServerScriptManager().contextFactory.enter();
+		var cx = (KubeJSContext) ((MinecraftServerAccessor) source.getServer()).getServerResources().managers().kjs$getServerScriptManager().contextFactory.enter();
 		cx.evaluateString(cx.topLevelScope, code, "eval", 1, null);
 		return 1;
 	}
 
 	private static int generateRecipeSchemaJson(CommandSourceStack source, ResourceKey<?> id) {
-		var storage = source.getServer().getServerResources().managers().kjs$getServerScriptManager().recipeSchemaStorage;
+		var storage = ((MinecraftServerAccessor) source.getServer()).getServerResources().managers().kjs$getServerScriptManager().recipeSchemaStorage;
 		var schemaType = storage.namespace(id.location().getNamespace()).get(id.location().getPath());
 		var ops = source.getServer().registryAccess().createSerializationContext(JsonOps.INSTANCE);
 

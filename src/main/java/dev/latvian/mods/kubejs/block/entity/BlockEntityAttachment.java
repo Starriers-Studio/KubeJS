@@ -1,11 +1,11 @@
 package dev.latvian.mods.kubejs.block.entity;
 
+import me.textrue.kubejs.fabric.thirdparty.util.NBTSerializable;
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
 public interface BlockEntityAttachment {
@@ -14,13 +14,13 @@ public interface BlockEntityAttachment {
 	}
 
 	@Nullable
-	default <CAP, SRC> CAP getCapability(BlockCapability<CAP, SRC> capability) {
+	default <CAP, SRC> CAP getCapability(BlockApiLookup<CAP, SRC> capability) {
 		return null;
 	}
 
 	@Nullable
 	default Tag serialize(HolderLookup.Provider registries) {
-		if (getWrappedObject() instanceof INBTSerializable<?> s) {
+		if (getWrappedObject() instanceof NBTSerializable<?> s) {
 			return s.serializeNBT(registries);
 		}
 
@@ -28,7 +28,7 @@ public interface BlockEntityAttachment {
 	}
 
 	default void deserialize(HolderLookup.Provider registries, @Nullable Tag tag) {
-		if (tag != null && getWrappedObject() instanceof INBTSerializable s) {
+		if (tag != null && getWrappedObject() instanceof NBTSerializable s) {
 			s.deserializeNBT(registries, tag);
 		}
 	}

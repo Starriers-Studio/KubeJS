@@ -1,6 +1,7 @@
 package dev.latvian.mods.kubejs.command;
 
 import dev.latvian.mods.kubejs.ingredient.NamespaceIngredient;
+import me.textrue.kubejs.fabric.thirdparty.util.FluidUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -13,7 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidUtil;
 
 import java.util.List;
 

@@ -2,12 +2,12 @@ package dev.latvian.mods.kubejs.net;
 
 import dev.latvian.mods.kubejs.client.highlight.KubedexPayloadHandler;
 import io.netty.buffer.ByteBuf;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record RequestBlockKubedexPayload(BlockPos pos, int flags) implements CustomPacketPayload {
 	public static final StreamCodec<ByteBuf, RequestBlockKubedexPayload> STREAM_CODEC = StreamCodec.composite(
@@ -21,9 +21,9 @@ public record RequestBlockKubedexPayload(BlockPos pos, int flags) implements Cus
 		return KubeJSNet.Kubedex.REQUEST_BLOCK;
 	}
 
-	public void handle(IPayloadContext ctx) {
+	public static void handle(RequestBlockKubedexPayload payload, ServerPlayNetworking.Context ctx) {
 		if (ctx.player() instanceof ServerPlayer serverPlayer && serverPlayer.hasPermissions(2)) {
-			ctx.enqueueWork(() -> KubedexPayloadHandler.block(serverPlayer, pos, flags));
+			ctx.server().execute(() -> KubedexPayloadHandler.block(serverPlayer, payload.pos, payload.flags));
 		}
 	}
 }

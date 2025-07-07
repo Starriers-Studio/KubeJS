@@ -32,6 +32,7 @@ import dev.latvian.mods.kubejs.util.Cast;
 import dev.latvian.mods.kubejs.util.ID;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import dev.latvian.mods.rhino.util.ReturnsSelf;
+import me.textrue.kubejs.fabric.helper.ItemStackHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -212,7 +213,7 @@ public abstract class BlockBuilder extends ModelledBuilderBase<Block> {
 				item.apply(SetItemCountFunction.setCount(ConstantValue.exactly(drop.getCount())));
 			}
 
-			if (!drop.isComponentsPatchEmpty()) {
+			if (!ItemStackHelper.isComponentsPatchEmpty(drop)) {
 				item.apply(LootItemConditionalFunction.simpleBuilder(c -> new SetComponentsFunction(c, drop.getComponentsPatch())));
 			}
 

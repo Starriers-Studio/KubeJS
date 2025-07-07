@@ -26,6 +26,7 @@ import java.util.UUID;
 @Mixin(Entity.class)
 @RemapPrefixForJS("kjs$")
 public abstract class EntityMixin implements EntityKJS {
+
 	@Shadow
 	public abstract void playerTouch(Player arg);
 
@@ -41,9 +42,9 @@ public abstract class EntityMixin implements EntityKJS {
 		return kjs$persistentData;
 	}
 
-	@Shadow(remap = false)
-	@RemapForJS("getForgePersistentData")
-	public abstract CompoundTag getPersistentData();
+//	@Shadow(remap = false)
+//	@RemapForJS("getForgePersistentData")
+//	public abstract CompoundTag getPersistentData();
 
 	@Inject(method = "saveWithoutId", at = @At("RETURN"))
 	private void saveKJS(CompoundTag tag, CallbackInfoReturnable<CompoundTag> ci) {

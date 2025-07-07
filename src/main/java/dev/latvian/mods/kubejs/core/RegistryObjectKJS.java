@@ -44,7 +44,7 @@ public interface RegistryObjectKJS<T> extends SpecialEquality {
 
 	default ResourceKey<T> kjs$getKey() {
 		try {
-			return kjs$asHolder().getKey();
+			return kjs$asHolder().unwrapKey().orElseThrow();
 		} catch (Exception ex) {
 			return kjs$getRegistry().getResourceKey((T) this).orElseThrow();
 		}

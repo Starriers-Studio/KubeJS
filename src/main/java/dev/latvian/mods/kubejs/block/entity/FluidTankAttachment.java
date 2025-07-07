@@ -1,14 +1,17 @@
 package dev.latvian.mods.kubejs.block.entity;
 
 import dev.latvian.mods.kubejs.KubeJS;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.fluids.capability.templates.FluidTank;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.util.ThirdPartyContexts;
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+
 import org.jetbrains.annotations.Nullable;
+import team.reborn.energy.api.EnergyStorage;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +29,9 @@ public class FluidTankAttachment implements BlockEntityAttachment {
 		}
 
 		@Override
-		public List<BlockCapability<?, ?>> getCapabilities() {
-			return List.of(Capabilities.EnergyStorage.BLOCK);
+		public List<BlockApiLookup<?, ?>> getCapabilities() {
+			BlockApiLookup<EnergyStorage, Direction> lookup = BlockApiLookup.get(ThirdPartyContexts.ENERGY_STORAGE_BLOCK_ID, EnergyStorage.class, Direction.class);
+			return List.of(lookup);
 		}
 	}
 
@@ -60,8 +64,8 @@ public class FluidTankAttachment implements BlockEntityAttachment {
 
 	@Override
 	@Nullable
-	public <CAP, SRC> CAP getCapability(BlockCapability<CAP, SRC> capability) {
-		if (capability == Capabilities.FluidHandler.BLOCK) {
+	public <CAP, SRC> CAP getCapability(BlockApiLookup<CAP, SRC> capability) {
+		if (capability == BlockApiLookup.get(ThirdPartyContexts.FLUID_HANDLER_ENTITY_ID, FluidTank.class, Direction.class)) {
 			return (CAP) fluidTank;
 		}
 

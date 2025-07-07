@@ -9,6 +9,7 @@ import dev.latvian.mods.kubejs.server.ChangesForChat;
 import dev.latvian.mods.kubejs.server.DataExport;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.core.registries.Registries;
@@ -22,7 +23,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -150,7 +150,7 @@ public interface MinecraftServerKJS extends WithAttachedData<MinecraftServer>, W
 
 	@Override
 	default void kjs$sendData(String channel, @Nullable CompoundTag data) {
-		PacketDistributor.sendToAllPlayers(new SendDataFromServerPayload(channel, data));
+		NetworkHelper.sendToAllPlayers(new SendDataFromServerPayload(channel, data));
 	}
 
 	@HideFromJS

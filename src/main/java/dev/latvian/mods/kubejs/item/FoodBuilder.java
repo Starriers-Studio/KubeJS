@@ -94,7 +94,7 @@ public class FoodBuilder {
 			@Param(name = "probability", value = "The probability of the effect being applied. 1 = 100%.")
 		})
 	public FoodBuilder effect(ResourceLocation mobEffectId, int duration, int amplifier, float probability) {
-		effects.add(new FoodProperties.PossibleEffect(new EffectSupplier(mobEffectId, duration, amplifier), probability));
+		effects.add(new FoodProperties.PossibleEffect(new EffectSupplier(mobEffectId, duration, amplifier).get(), probability));
 		return this;
 	}
 
@@ -104,7 +104,7 @@ public class FoodBuilder {
 			return this;
 		}
 
-		effects.removeIf(e -> e.effectSupplier().get().getEffect().value() == mobEffect);
+		effects.removeIf(e -> e.effect().getEffect().value() == mobEffect);
 		return this;
 	}
 

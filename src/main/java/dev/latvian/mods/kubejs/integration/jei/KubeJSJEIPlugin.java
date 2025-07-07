@@ -6,26 +6,26 @@ import dev.latvian.mods.kubejs.recipe.viewer.RecipeViewerEntryType;
 import dev.latvian.mods.kubejs.recipe.viewer.server.RecipeViewerData;
 import dev.latvian.mods.kubejs.recipe.viewer.server.RemoteRecipeViewerDataUpdatedEvent;
 import dev.latvian.mods.kubejs.script.ScriptType;
+import me.textrue.kubejs.fabric.helper.FluidStackHelper;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.CompoundIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.CompoundFluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.fabric.constants.FabricTypes;
+import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
 import mezz.jei.api.helpers.IPlatformFluidHelper;
-import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.crafting.CompoundIngredient;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.CompoundFluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,11 +36,11 @@ import java.util.stream.Collectors;
 @JeiPlugin
 public class KubeJSJEIPlugin implements IModPlugin {
 	public static final ResourceLocation ID = KubeJS.id("jei");
-	public static final boolean DISABLED = ModList.get().isLoaded("emi");
+	public static final boolean DISABLED = FabricLoader.getInstance().isModLoaded("emi");
 	private RecipeViewerData remote = null;
 
 	public KubeJSJEIPlugin() {
-		NeoForge.EVENT_BUS.register(this);
+		loadRemote();
 	}
 
 	@Override
@@ -48,9 +48,10 @@ public class KubeJSJEIPlugin implements IModPlugin {
 		return ID;
 	}
 
-	@SubscribeEvent
-	public void loadRemote(RemoteRecipeViewerDataUpdatedEvent event) {
-		remote = event.data;
+	public void loadRemote() {
+		RemoteRecipeViewerDataUpdatedEvent.EVENT.register(data -> {
+			remote = data;
+		});
 	}
 
 	@Override
@@ -86,7 +87,7 @@ public class KubeJSJEIPlugin implements IModPlugin {
 		}
 
 		var allItems = ingredientManager.getAllIngredients(VanillaTypes.ITEM_STACK);
-		var allFluids = ingredientManager.getAllIngredients(NeoForgeTypes.FLUID_STACK);
+		var allFluids = ingredientManager.getAllIngredients(FabricTypes.FLUID_STACK);
 
 		for (var type : RecipeViewerEntryType.ALL_TYPES.get()) {
 			var ingredientType = JEIIntegration.typeOf(type);
@@ -126,15 +127,15 @@ public class KubeJSJEIPlugin implements IModPlugin {
 				filterList.addAll(remote.fluidData().removedEntries());
 				filterList.addAll(remote.fluidData().completelyRemovedEntries());
 				var filter = new CompoundFluidIngredient(filterList);
-				var removed = new ArrayList<FluidStack>();
+				var removed = new ArrayList<IJeiFluidIngredient>();
 
 				for (var stack : allFluids) {
-					if (filter.test(stack)) {
+					if (filter.test(FluidStackHelper.jeiToThirdParty(stack))) {
 						removed.add(stack);
 					}
 				}
 
-				ingredientManager.removeIngredientsAtRuntime(NeoForgeTypes.FLUID_STACK, removed);
+				ingredientManager.removeIngredientsAtRuntime(FabricTypes.FLUID_STACK, removed);
 			}
 		}
 
@@ -156,7 +157,7 @@ public class KubeJSJEIPlugin implements IModPlugin {
 			// Fluid
 
 			if (!remote.fluidData().addedEntries().isEmpty()) {
-				ingredientManager.addIngredientsAtRuntime(NeoForgeTypes.FLUID_STACK, remote.fluidData().addedEntries());
+				ingredientManager.addIngredientsAtRuntime(FabricTypes.FLUID_STACK, FluidStackHelper.thirdPartyToJeis(remote.fluidData().addedEntries()));
 			}
 		}
 	}
@@ -190,18 +191,18 @@ public class KubeJSJEIPlugin implements IModPlugin {
 				registration.addIngredientInfo(stacks, VanillaTypes.ITEM_STACK, info.info().toArray(new Component[0]));
 			}
 
-			var allFluids = registration.getIngredientManager().getAllIngredients(NeoForgeTypes.FLUID_STACK);
+			var allFluids = registration.getIngredientManager().getAllIngredients(FabricTypes.FLUID_STACK);
 
 			for (var info : remote.fluidData().info()) {
-				var stacks = new ArrayList<FluidStack>();
+				var stacks = new ArrayList<IJeiFluidIngredient>();
 
 				for (var stack : allFluids) {
-					if (info.filter().test(stack)) {
+					if (info.filter().test(FluidStackHelper.jeiToThirdParty(stack))) {
 						stacks.add(stack);
 					}
 				}
 
-				registration.addIngredientInfo(stacks, NeoForgeTypes.FLUID_STACK, info.info().toArray(new Component[0]));
+				registration.addIngredientInfo(stacks, FabricTypes.FLUID_STACK, info.info().toArray(new Component[0]));
 			}
 		}
 	}
@@ -234,7 +235,7 @@ public class KubeJSJEIPlugin implements IModPlugin {
 		}
 
 		if (RecipeViewerEvents.REGISTER_SUBTYPES.hasListeners(RecipeViewerEntryType.FLUID)) {
-			RecipeViewerEvents.REGISTER_SUBTYPES.post(ScriptType.CLIENT, RecipeViewerEntryType.FLUID, new JEIRegisterSubtypesKubeEvent(RecipeViewerEntryType.FLUID, NeoForgeTypes.FLUID_STACK, registration));
+			RecipeViewerEvents.REGISTER_SUBTYPES.post(ScriptType.CLIENT, RecipeViewerEntryType.FLUID, new JEIRegisterSubtypesKubeEvent(RecipeViewerEntryType.FLUID, FabricTypes.FLUID_STACK, registration));
 		}
 
 		if (remote != null) {
@@ -242,7 +243,7 @@ public class KubeJSJEIPlugin implements IModPlugin {
 				var in = DataComponentTypeInterpreter.of(subtypes.components());
 
 				for (var fluid : Arrays.stream(subtypes.filter().getStacks()).map(FluidStack::getFluid).toArray(Fluid[]::new)) {
-					registration.registerSubtypeInterpreter(NeoForgeTypes.FLUID_STACK, fluid, in);
+					registration.registerSubtypeInterpreter(FabricTypes.FLUID_STACK, fluid, in);
 				}
 			}
 		}

@@ -17,7 +17,7 @@ public class OptionsMixin {
 	@Final
 	private File optionsFile;
 
-	@Inject(method = "load(Z)V", at = @At("HEAD"))
+	@Inject(method = "load()V", at = @At("HEAD"))
 	private void loadKJS(CallbackInfo ci) {
 		KubeJSClient.copyDefaultOptionsFile(optionsFile);
 	}

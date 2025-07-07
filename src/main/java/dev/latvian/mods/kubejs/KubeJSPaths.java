@@ -1,7 +1,7 @@
 package dev.latvian.mods.kubejs;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.packs.PackType;
-import net.neoforged.fml.loading.FMLPaths;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ public interface KubeJSPaths {
 		return dir(dir, false);
 	}
 
-	Path GAMEDIR = FMLPaths.GAMEDIR.get().normalize().toAbsolutePath();
+	Path GAMEDIR = FabricLoader.getInstance().getGameDir().normalize().toAbsolutePath();
 	Path DIRECTORY = dir(GAMEDIR.resolve("kubejs"), true);
 	Path DATA = dir(DIRECTORY.resolve("data"));
 	Path ASSETS = dir(DIRECTORY.resolve("assets"));

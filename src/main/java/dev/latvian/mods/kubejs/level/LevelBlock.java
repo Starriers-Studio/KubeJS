@@ -7,6 +7,8 @@ import dev.latvian.mods.kubejs.plugin.builtin.wrapper.BlockWrapper;
 import dev.latvian.mods.kubejs.util.Cast;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.helper.PlayerHelper;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -30,7 +32,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -288,7 +289,7 @@ public interface LevelBlock extends BlockProviderKJS {
 		var entity = getEntity();
 
 		if (entity != null) {
-			var c = getLevel().getCapability(Capabilities.ItemHandler.BLOCK, getPos(), getBlockState(), getEntity(), facing);
+			var c = ItemStorage.SIDED.find(getLevel(), getPos(), facing);
 
 			if (c instanceof InventoryKJS inv) {
 				return inv;
@@ -333,7 +334,7 @@ public interface LevelBlock extends BlockProviderKJS {
 		double cz = getCenterZ();
 
 		for (var entity : getLevel().getEntities((Entity) null, new AABB(cx - 0.5D - radius, cy - 0.5D - radius, cz - 0.5D - radius, cx + 0.5D + radius, cy + 0.5D + radius, cz + 0.5D + radius), EntityArrayList.ALWAYS_TRUE_PREDICATE)) {
-			if (entity.distanceToSqr(cx, cy, cz) <= radius * radius && entity instanceof Player p && !p.isFakePlayer()) {
+			if (entity.distanceToSqr(cx, cy, cz) <= radius * radius && entity instanceof Player p && !PlayerHelper.isFakePlayer(p)) {
 				list.add(p);
 			}
 		}
@@ -346,7 +347,7 @@ public interface LevelBlock extends BlockProviderKJS {
 	}
 
 	default ResourceLocation getBiomeId() {
-		var k = getLevel().getBiome(getPos()).getKey();
+		var k = getLevel().getBiome(getPos()).tags().findAny().orElse(null);
 		return k == null ? Biomes.PLAINS.location() : k.location();
 	}
 

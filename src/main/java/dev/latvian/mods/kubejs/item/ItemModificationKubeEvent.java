@@ -67,7 +67,7 @@ public class ItemModificationKubeEvent implements KubeEvent {
 			if (item instanceof TieredItem tiered) {
 				var oldTier = tiered.tier;
 				var tier = Util.make(new MutableToolTier(tiered.tier), c);
-				tiered.tier = tier;
+				tiered.tier = tier.parent;
 
 				// need to update modifiers for attack dmg; this is quite messy but oh well
 				var modifiers = ItemAttributeModifiers.builder();

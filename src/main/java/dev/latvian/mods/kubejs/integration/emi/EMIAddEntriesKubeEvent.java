@@ -5,8 +5,8 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.latvian.mods.kubejs.recipe.viewer.AddEntriesKubeEvent;
 import dev.latvian.mods.kubejs.recipe.viewer.RecipeViewerEntryType;
 import dev.latvian.mods.rhino.Context;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
 
 public class EMIAddEntriesKubeEvent implements AddEntriesKubeEvent {
 	private final RecipeViewerEntryType type;

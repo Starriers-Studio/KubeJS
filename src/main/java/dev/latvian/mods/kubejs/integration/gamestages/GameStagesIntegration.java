@@ -1,5 +1,5 @@
 package dev.latvian.mods.kubejs.integration.gamestages;
-
+/*
 import dev.latvian.mods.kubejs.stages.StageCreationEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -11,7 +11,6 @@ public class GameStagesIntegration {
 		//event.setPlayerStages(new GameStagesWrapper(event.getPlayer()));
 	}
 
-	/*
 	@SubscribeEvent
 	public static void stageAdded(GameStageEvent.Added event) {
 		if (STAGE_ADDED.hasListeners()) {
@@ -29,5 +28,6 @@ public class GameStagesIntegration {
 
 		Stages.invokeRemoved(Stages.get(event.getEntity()), event.getStageName());
 	}
-	*/
+
 }
+*/

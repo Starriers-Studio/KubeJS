@@ -1,10 +1,10 @@
 package dev.latvian.mods.kubejs.core.mixin;
 
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
+import me.textrue.kubejs.fabric.thirdparty.conditions.ICondition;
+import me.textrue.kubejs.fabric.thirdparty.conditions.TagEmptyCondition;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.common.conditions.ICondition;
-import net.neoforged.neoforge.common.conditions.TagEmptyCondition;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

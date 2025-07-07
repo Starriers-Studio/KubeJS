@@ -5,9 +5,9 @@ import dev.latvian.mods.kubejs.script.ConsoleJS;
 import dev.latvian.mods.kubejs.util.KubeResourceLocation;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.util.HideFromJS;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.minecraft.core.Direction;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -32,7 +32,7 @@ public interface BlockEntityAttachmentHandler {
 		}
 	}
 
-	default void attachCustomCapability(String id, Set<Direction> directions, BlockCapability<?, ?> capability, Supplier<?> dataFactory) {
+	default void attachCustomCapability(String id, Set<Direction> directions, BlockApiLookup<?, ?> capability, Supplier<?> dataFactory) {
 		attach(id, CustomCapabilityAttachment.TYPE, directions, new CustomCapabilityAttachment.Factory(capability, dataFactory));
 	}
 

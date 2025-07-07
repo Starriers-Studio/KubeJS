@@ -1,37 +1,57 @@
 package dev.latvian.mods.kubejs.player;
 
 import dev.latvian.mods.kubejs.CommonProperties;
-import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.plugin.builtin.event.PlayerEvents;
 import dev.latvian.mods.kubejs.script.ConsoleJS;
 import dev.latvian.mods.kubejs.script.ScriptType;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.player.AdvancementEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerChangedDimensionEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerCloneEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerContainerEvents;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerLoggedEvents;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerRespawnEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.ServerChatEvents;
+import me.textrue.kubejs.fabric.thirdparty.mixin.MinecraftServerAccessor;
+import me.textrue.kubejs.fabric.thirdparty.util.event.ThirdPartyEventResult;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.OnDatapackSyncEvent;
-import net.neoforged.neoforge.event.ServerChatEvent;
-import net.neoforged.neoforge.event.entity.player.AdvancementEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
-@EventBusSubscriber(modid = KubeJS.MOD_ID)
+import java.util.stream.Stream;
+
 public class KubeJSPlayerEventHandler {
-	@SubscribeEvent(priority = EventPriority.HIGH)
-	public static void datapackSync(OnDatapackSyncEvent event) {
-		var payload = event.getPlayerList().getServer().getServerResources().managers().kjs$getServerScriptManager().serverData;
-		event.getRelevantPlayers().forEach(player -> PacketDistributor.sendToPlayer(player, payload));
+
+	public static void init() {
+		PlayerLoggedEvents.LOGGED_IN.register(KubeJSPlayerEventHandler::loggedIn);
+		PlayerCloneEvent.EVENT.register(KubeJSPlayerEventHandler::cloned);
+		PlayerRespawnEvent.EVENT.register(KubeJSPlayerEventHandler::respawn);
+		PlayerLoggedEvents.LOGGED_OUT.register(KubeJSPlayerEventHandler::loggedOut);
+		ServerChatEvents.RECEIVED.register(KubeJSPlayerEventHandler::chatReceived);
+		ServerChatEvents.DECORATE.register(KubeJSPlayerEventHandler::chatDecorate);
+		AdvancementEvent.EVENT.register(KubeJSPlayerEventHandler::advancement);
+		PlayerContainerEvents.OPEN.register(KubeJSPlayerEventHandler::inventoryOpened);
+		PlayerContainerEvents.CLOSE.register(KubeJSPlayerEventHandler::inventoryClosed);
+		PlayerChangedDimensionEvent.EVENT.register((player, oldLevel, newLevel) -> {
+			KubeJSPlayerEventHandler.dimensionChanged(player);
+		});
 	}
 
-	@SubscribeEvent
-	public static void loggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		if (event.getEntity() instanceof ServerPlayer player) {
+	public static void datapackSync(PlayerList playerList, ServerPlayer serverPlayer) {
+		var payload = ((MinecraftServerAccessor) playerList.getServer()).getServerResources().managers().kjs$getServerScriptManager().serverData;
+		var relevantPlayers = serverPlayer == null ? playerList.getPlayers().stream() : Stream.of(serverPlayer);
+		relevantPlayers.forEach(player -> NetworkHelper.sendToPlayer(player, payload));
+	}
+
+	public static void loggedIn(ServerPlayer serverPlayer) {
+		if (serverPlayer instanceof ServerPlayer player) {
 			if (PlayerEvents.LOGGED_IN.hasListeners()) {
 				PlayerEvents.LOGGED_IN.post(ScriptType.SERVER, new SimplePlayerKubeEvent(player));
 			}
@@ -46,71 +66,62 @@ public class KubeJSPlayerEventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void cloned(PlayerEvent.Clone event) {
-		if (event.getOriginal() instanceof ServerPlayer oldPlayer && event.getEntity() instanceof ServerPlayer newPlayer) {
+	public static void cloned(ServerPlayer original, ServerPlayer serverPlayer, boolean wonGame) {
+		if (original instanceof ServerPlayer oldPlayer && serverPlayer instanceof ServerPlayer newPlayer) {
 			newPlayer.kjs$setRawPersistentData(oldPlayer.kjs$getRawPersistentData());
 			newPlayer.inventoryMenu.addSlotListener(newPlayer.kjs$getInventoryChangeListener()); // move this to respawn?
 
 			if (PlayerEvents.CLONED.hasListeners()) {
-				PlayerEvents.CLONED.post(ScriptType.SERVER, new PlayerClonedKubeEvent(newPlayer, oldPlayer, !event.isWasDeath()));
+				PlayerEvents.CLONED.post(ScriptType.SERVER, new PlayerClonedKubeEvent(newPlayer, oldPlayer, wonGame));
 			}
 		}
 	}
 
-	@SubscribeEvent
-	public static void respawn(PlayerEvent.PlayerRespawnEvent event) {
-		if (event.getEntity() instanceof ServerPlayer player) {
+	public static void respawn(ServerPlayer newPlayer, boolean conqueredEnd, Entity.RemovalReason removalReason) {
+		if (newPlayer instanceof ServerPlayer player) {
 			if (PlayerEvents.RESPAWNED.hasListeners()) {
-				PlayerEvents.RESPAWNED.post(ScriptType.SERVER, new PlayerRespawnedKubeEvent(player, event.isEndConquered()));
+				PlayerEvents.RESPAWNED.post(ScriptType.SERVER, new PlayerRespawnedKubeEvent(player, conqueredEnd));
 			}
 
 			player.kjs$getStages().sync();
 		}
 	}
 
-	@SubscribeEvent
-	public static void loggedOut(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
-		if (PlayerEvents.LOGGED_OUT.hasListeners() && event.getEntity() instanceof ServerPlayer player) {
+	public static void loggedOut(ServerPlayer serverPlayer) {
+		if (PlayerEvents.LOGGED_OUT.hasListeners() && serverPlayer instanceof ServerPlayer player) {
 			PlayerEvents.LOGGED_OUT.post(ScriptType.SERVER, new SimplePlayerKubeEvent(player));
 		}
 	}
 
-	@SubscribeEvent
-	public static void tick(PlayerTickEvent.Post event) {
-		if (PlayerEvents.TICK.hasListeners() && event.getEntity() instanceof ServerPlayer player) {
+	public static void tick(Player tickPlayer) {
+		if (PlayerEvents.TICK.hasListeners() && tickPlayer instanceof ServerPlayer player) {
 			PlayerEvents.TICK.post(player, new SimplePlayerKubeEvent(player));
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public static void chatDecorate(ServerChatEvent event) {
+	public static void chatDecorate(ServerPlayer serverPlayer, ServerChatEvents.ChatComponent chatComponent) {
 		if (PlayerEvents.DECORATE_CHAT.hasListeners()) {
-			PlayerEvents.DECORATE_CHAT.post(ScriptType.SERVER, new PlayerChatReceivedKubeEvent(event)).applyCancel(event);
+			PlayerEvents.DECORATE_CHAT.post(ScriptType.SERVER, new PlayerChatReceivedKubeEvent(serverPlayer, chatComponent));
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void chatReceived(ServerChatEvent event) {
+	public static ThirdPartyEventResult chatReceived(ServerPlayer serverPlayer, ServerChatEvents.ChatComponent chatComponent) {
 		if (PlayerEvents.CHAT.hasListeners()) {
-			PlayerEvents.CHAT.post(ScriptType.SERVER, new PlayerChatReceivedKubeEvent(event)).applyCancel(event);
+			return PlayerEvents.CHAT.post(ScriptType.SERVER, new PlayerChatReceivedKubeEvent(serverPlayer, chatComponent)).compoundResult().result();
 		}
+		return ThirdPartyEventResult.pass();
 	}
 
-	@SubscribeEvent
-	public static void advancement(AdvancementEvent.AdvancementEarnEvent event) {
-		var id = event.getAdvancement().id();
+	public static void advancement(ServerPlayer serverPlayer, AdvancementHolder advancement) {
+		var id = advancement.id();
 
-		if (PlayerEvents.ADVANCEMENT.hasListeners(id) && event.getEntity() instanceof ServerPlayer player) {
+		if (PlayerEvents.ADVANCEMENT.hasListeners(id) && serverPlayer instanceof ServerPlayer player) {
 			PlayerEvents.ADVANCEMENT.post(new PlayerAdvancementKubeEvent(player, player.server.kjs$getAdvancement(id)), id);
 		}
 	}
 
-	@SubscribeEvent
-	public static void inventoryOpened(PlayerContainerEvent.Open event) {
-		if (event.getEntity() instanceof ServerPlayer player) {
-			var menu = event.getContainer();
-
+	public static void inventoryOpened(Player inventoryPlayer, AbstractContainerMenu menu) {
+		if (inventoryPlayer instanceof ServerPlayer player) {
 			if (!(menu instanceof InventoryMenu)) {
 				menu.addSlotListener(player.kjs$getInventoryChangeListener());
 			}
@@ -135,11 +146,8 @@ public class KubeJSPlayerEventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void inventoryClosed(PlayerContainerEvent.Close event) {
-		if (event.getEntity() instanceof ServerPlayer player) {
-			var menu = event.getContainer();
-
+	public static void inventoryClosed(Player inventoryPlayer, AbstractContainerMenu menu) {
+		if (inventoryPlayer instanceof ServerPlayer player) {
 			ResourceKey<MenuType<?>> key;
 
 			try {
@@ -160,10 +168,9 @@ public class KubeJSPlayerEventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void dimensionChanged(PlayerEvent.PlayerChangedDimensionEvent event) {
+	public static void dimensionChanged(Player player) {
 		try {
-			event.getEntity().kjs$getStages().sync();
+			player.kjs$getStages().sync();
 		} catch (Exception ignored) {
 		}
 	}

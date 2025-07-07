@@ -1,8 +1,8 @@
 package dev.latvian.mods.kubejs.fluid;
 
 import dev.latvian.mods.kubejs.registry.BuilderBase;
+import me.textrue.kubejs.fabric.thirdparty.fluids.BaseFlowingFluid;
 import net.minecraft.world.level.material.FlowingFluid;
-import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 
 public class FlowingFluidBuilder extends BuilderBase<FlowingFluid> {
 	public final FluidBuilder fluidBuilder;

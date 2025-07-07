@@ -40,7 +40,7 @@ public record HolderSetWrapper<T>(Registry<T> registry, HolderSet<T> holders) im
 
 	public Set<ResourceLocation> getKeys() {
 		return holders.stream().map(holder -> {
-			var key = holder.getKey();
+			var key = holder.unwrapKey().orElse(null);
 			if (key == null) {
 				return null;
 			}

@@ -1,25 +1,29 @@
 package dev.latvian.mods.kubejs.event;
 
+import dev.latvian.mods.kubejs.util.UtilsJS;
 import dev.latvian.mods.rhino.Context;
-import net.neoforged.bus.api.ICancellableEvent;
-import net.neoforged.neoforge.common.util.TriState;
+import me.textrue.kubejs.fabric.thirdparty.util.event.CompoundEventResult;
+import me.textrue.kubejs.fabric.thirdparty.util.event.ThirdPartyEventResult;
+import net.fabricmc.fabric.api.util.TriState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
 public class EventResult {
 	public enum Type {
-		ERROR,
-		PASS,
-		INTERRUPT_DEFAULT,
-		INTERRUPT_FALSE,
-		INTERRUPT_TRUE;
+		ERROR(ThirdPartyEventResult.pass()),
+		PASS(ThirdPartyEventResult.pass()),
+		INTERRUPT_DEFAULT(ThirdPartyEventResult.interruptDefault()),
+		INTERRUPT_FALSE(ThirdPartyEventResult.interruptFalse()),
+		INTERRUPT_TRUE(ThirdPartyEventResult.interruptTrue());
 
 		private final EventResult defaultResult;
+		public final ThirdPartyEventResult defaultVanillaResult;
 		private final EventExit defaultExit;
 
-		Type() {
+		Type(ThirdPartyEventResult defaultVanillaResult) {
 			this.defaultResult = new EventResult(null, this, null);
+			this.defaultVanillaResult = defaultVanillaResult;
 			this.defaultExit = new EventExit(this.defaultResult);
 		}
 
@@ -74,13 +78,22 @@ public class EventResult {
 		return type == Type.INTERRUPT_TRUE;
 	}
 
-	public boolean applyCancel(ICancellableEvent event) {
-		if (interruptFalse()) {
-			event.setCanceled(true);
-			return true;
-		}
+//	public boolean applyCancel(ICancellableEvent event) {
+//		if (interruptFalse()) {
+//			event.setCanceled(true);
+//			return true;
+//		}
+//
+//		return false;
+//	}
 
-		return false;
+	public <T> CompoundEventResult<T> compoundResult() {
+		return switch (type) {
+			case INTERRUPT_DEFAULT -> CompoundEventResult.interruptDefault(UtilsJS.cast(value));
+			case INTERRUPT_FALSE -> CompoundEventResult.interruptFalse(UtilsJS.cast(value));
+			case INTERRUPT_TRUE -> CompoundEventResult.interruptTrue(UtilsJS.cast(value));
+			default -> CompoundEventResult.pass();
+		};
 	}
 
 	public void applyTristate(Consumer<TriState> consumer) {

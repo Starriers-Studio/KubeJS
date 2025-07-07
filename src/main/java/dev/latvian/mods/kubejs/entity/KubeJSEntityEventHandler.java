@@ -1,89 +1,103 @@
 package dev.latvian.mods.kubejs.entity;
 
-import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.plugin.builtin.event.EntityEvents;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.living.LivingCheckSpawnEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.living.LivingDamageEvents;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.living.LivingDeathEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.living.LivingDropsEvent;
+import me.textrue.kubejs.fabric.thirdparty.extensions.IOwnedSpawner;
+import me.textrue.kubejs.fabric.thirdparty.util.event.ThirdPartyEventResult;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.server.level.ServerLevel;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.LevelAccessor;
+import org.jetbrains.annotations.Nullable;
 
-@EventBusSubscriber(modid = KubeJS.MOD_ID)
+import java.util.Collection;
+
 public class KubeJSEntityEventHandler {
-	@SubscribeEvent
-	public static void checkSpawn(FinalizeSpawnEvent event) {
-		var key = event.getEntity().getType().kjs$getKey();
 
-		if (event.getLevel() instanceof ServerLevel level && EntityEvents.CHECK_SPAWN.hasListeners(key)) {
+	public static void init() {
+		LivingCheckSpawnEvent.EVENT.register(KubeJSEntityEventHandler::checkSpawn);
+		LivingDeathEvent.EVENT.register(KubeJSEntityEventHandler::livingDeath);
+		LivingDamageEvents.PRE.register(KubeJSEntityEventHandler::beforeLivingHurt);
+		LivingDamageEvents.POST.register(KubeJSEntityEventHandler::afterLivingHurt);
+		ServerEntityEvents.ENTITY_LOAD.register(KubeJSEntityEventHandler::entitySpawned);
+		LivingDropsEvent.EVENT.register(KubeJSEntityEventHandler::livingDrops);
+	}
+
+	public static ThirdPartyEventResult checkSpawn(LivingEntity entity, LevelAccessor world, double x, double y, double z, MobSpawnType type, @Nullable IOwnedSpawner spawner) {
+		var key = entity.getType().kjs$getKey();
+
+		if (world instanceof ServerLevel level && EntityEvents.CHECK_SPAWN.hasListeners(key)) {
 			var result = EntityEvents.CHECK_SPAWN.post(level, key, new CheckLivingEntitySpawnKubeEvent(
-				event.getEntity(),
+				entity,
 				level,
-				event.getX(),
-				event.getY(),
-				event.getZ(),
-				event.getSpawnType(),
-				event.getSpawner()
+				x,
+				y,
+				z,
+				type,
+				spawner.getOwner()
 			));
 
 			if (result.interruptFalse() || result.interruptTrue()) {
-				event.setSpawnCancelled(result.interruptFalse());
-				event.setCanceled(true);
+				return ThirdPartyEventResult.interrupt(result.interruptFalse());
 			}
 		}
+		return ThirdPartyEventResult.pass();
 	}
 
-	@SubscribeEvent
-	public static void livingDeath(LivingDeathEvent event) {
-		var key = event.getEntity().getType().kjs$getKey();
+	public static ThirdPartyEventResult livingDeath(LivingEntity entity, DamageSource source) {
+		var key = entity.getType().kjs$getKey();
 
 		if (EntityEvents.DEATH.hasListeners(key)) {
-			EntityEvents.DEATH.post(event.getEntity(), key, new LivingEntityDeathKubeEvent(event.getEntity(), event.getSource())).applyCancel(event);
+			return EntityEvents.DEATH.post(entity, key, new LivingEntityDeathKubeEvent(entity, source)).compoundResult().result();
 		}
+		return ThirdPartyEventResult.pass();
 	}
 
-	@SubscribeEvent
-	public static void beforeLivingHurt(LivingDamageEvent.Pre event) {
-		var key = event.getEntity().getType().kjs$getKey();
+	public static float beforeLivingHurt(LivingEntity entity, DamageSource source, float amount) {
+		var key = entity.getType().kjs$getKey();
 
 		if (EntityEvents.BEFORE_HURT.hasListeners(key)) {
-			if (EntityEvents.BEFORE_HURT.post(event.getEntity(), key, new BeforeLivingEntityHurtKubeEvent(event)).interruptFalse()) {
-				event.getContainer().setNewDamage(0F);
+			if (EntityEvents.BEFORE_HURT.post(entity, key, new BeforeLivingEntityHurtKubeEvent(entity, source, amount)).interruptFalse()) {
+				return 0F;
 			}
 		}
+		return amount;
 	}
 
-	@SubscribeEvent
-	public static void afterLivingHurt(LivingDamageEvent.Post event) {
-		var key = event.getEntity().getType().kjs$getKey();
+	public static void afterLivingHurt(LivingEntity entity, DamageSource source, float amount) {
+		var key = entity.getType().kjs$getKey();
 
 		if (EntityEvents.AFTER_HURT.hasListeners(key)) {
-			EntityEvents.AFTER_HURT.post(event.getEntity(), key, new AfterLivingEntityHurtKubeEvent(event));
+			EntityEvents.AFTER_HURT.post(entity, key, new AfterLivingEntityHurtKubeEvent(entity, source, amount));
 		}
 	}
 
-	@SubscribeEvent
-	public static void entitySpawned(EntityJoinLevelEvent event) {
-		var key = event.getEntity().getType().kjs$getKey();
+	public static void entitySpawned(Entity entity, ServerLevel serverLevel) {
+		var key = entity.getType().kjs$getKey();
 
-		if (EntityEvents.SPAWNED.hasListeners(key) && event.getLevel() instanceof ServerLevel level) {
-			EntityEvents.SPAWNED.post(level, key, new EntitySpawnedKubeEvent(event.getEntity(), level)).applyCancel(event);
+		if (EntityEvents.SPAWNED.hasListeners(key) && serverLevel instanceof ServerLevel level) {
+			EntityEvents.SPAWNED.post(level, key, new EntitySpawnedKubeEvent(entity, level)).compoundResult().result();
 		}
 	}
 
-	@SubscribeEvent
-	public static void livingDrops(LivingDropsEvent event) {
-		var key = event.getEntity().getType().kjs$getKey();
+	public static boolean livingDrops(LivingEntity entity, DamageSource source, Collection<ItemEntity> drops, boolean recentlyHit) {
+		var key = entity.getType().kjs$getKey();
 
 		if (EntityEvents.ENTITY_DROPS.hasListeners(key)) {
-			var e = new LivingEntityDropsKubeEvent(event);
+			var e = new LivingEntityDropsKubeEvent(entity, source, drops, recentlyHit);
 
-			if (!EntityEvents.ENTITY_DROPS.post(event.getEntity(), key, e).applyCancel(event) && e.eventDrops != null) {
-				event.getDrops().clear();
-				event.getDrops().addAll(e.eventDrops);
+			if (!EntityEvents.ENTITY_DROPS.post(entity, key, e).compoundResult().isFalse() && e.eventDrops != null) {
+				drops.clear();
+				drops.addAll(e.eventDrops);
 			}
 		}
+		return recentlyHit;
 	}
 }

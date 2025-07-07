@@ -4,8 +4,8 @@ import dev.latvian.mods.kubejs.error.KubeRuntimeException;
 import dev.latvian.mods.kubejs.recipe.match.FluidMatch;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 
 @RemapPrefixForJS("kjs$")
 public interface FluidIngredientKJS extends FluidMatch {

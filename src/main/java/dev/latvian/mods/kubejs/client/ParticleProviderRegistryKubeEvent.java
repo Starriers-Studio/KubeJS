@@ -1,5 +1,6 @@
 package dev.latvian.mods.kubejs.client;
 
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -7,24 +8,19 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 import java.util.function.Consumer;
 
 public class ParticleProviderRegistryKubeEvent implements ClientKubeEvent {
-
-	private final RegisterParticleProvidersEvent parent;
-
-	public ParticleProviderRegistryKubeEvent(RegisterParticleProvidersEvent event) {
-		parent = event;
+	public ParticleProviderRegistryKubeEvent() {
 	}
 
 	public <T extends ParticleOptions> void register(ParticleType<T> type, SpriteSetParticleProvider<T> spriteProvider) {
-		parent.registerSpriteSet(type, spriteProvider);
+		ParticleFactoryRegistry.getInstance().register(type, spriteProvider::create);
 	}
 
 	public <T extends ParticleOptions> void register(ParticleType<T> type, Consumer<KubeAnimatedParticle> particle) {
-		parent.registerSpriteSet(type, set -> (type1, level, x, y, z, xSpeed, ySpeed, zSpeed) -> {
+		ParticleFactoryRegistry.getInstance().register(type, set -> (type1, level, x, y, z, xSpeed, ySpeed, zSpeed) -> {
 			var kube = new KubeAnimatedParticle(level, x, y, z, set);
 			kube.setParticleSpeed(xSpeed, ySpeed, zSpeed);
 			particle.accept(kube);
@@ -38,7 +34,7 @@ public class ParticleProviderRegistryKubeEvent implements ClientKubeEvent {
 	}
 
 	public <T extends ParticleOptions> void registerSpecial(ParticleType<T> type, ParticleProvider<T> provider) {
-		parent.registerSpecial(type, provider);
+		ParticleFactoryRegistry.getInstance().register(type, provider);
 	}
 
 	@FunctionalInterface

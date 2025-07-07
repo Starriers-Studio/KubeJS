@@ -42,7 +42,7 @@ public abstract class ItemStackMixin implements ItemStackKJS {
 	@HideFromJS
 	public abstract Stream<TagKey<Item>> getTags();
 
-	@ModifyConstant(method = "lambda$static$3", constant = @Constant(intValue = 99))
+	@ModifyConstant(method = {"lambda$static$3", "method_57371"}, constant = @Constant(intValue = 99))
 	private static int kjs$maxSlotSize(int original) {
 		return CommonProperties.get().getMaxSlotSize(original);
 	}

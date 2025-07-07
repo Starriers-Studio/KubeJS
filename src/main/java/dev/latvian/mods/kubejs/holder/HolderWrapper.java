@@ -11,10 +11,10 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 public interface HolderWrapper {
 	TypeInfo HOLDER = TypeInfo.of(Holder.class);
@@ -47,7 +47,11 @@ public interface HolderWrapper {
 
 		var holder = registry.getHolder(id);
 
-		return holder.isEmpty() ? DeferredHolder.create(registry.key(), id) : holder.get();
+		if (holder.isEmpty()) {
+			//return DeferredHolder.create(registry.key(), id);
+			return Holder.direct(Objects.requireNonNull(registry.get(id)));
+		}
+		return holder.get();
 	}
 
 	static HolderSet<?> wrapSet(KubeJSContext cx, Object from, TypeInfo param) {

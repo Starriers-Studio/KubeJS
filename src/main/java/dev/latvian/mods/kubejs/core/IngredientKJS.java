@@ -11,14 +11,14 @@ import dev.latvian.mods.kubejs.recipe.match.Replaceable;
 import dev.latvian.mods.kubejs.util.WithCodec;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.CompoundIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.DifferenceIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.IntersectionIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.SizedIngredient;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.crafting.CompoundIngredient;
-import net.neoforged.neoforge.common.crafting.DifferenceIngredient;
-import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import org.jetbrains.annotations.Nullable;
 
 @RemapPrefixForJS("kjs$")

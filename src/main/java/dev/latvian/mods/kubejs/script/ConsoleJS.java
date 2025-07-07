@@ -23,8 +23,8 @@ import dev.latvian.mods.rhino.EcmaError;
 import dev.latvian.mods.rhino.RhinoException;
 import dev.latvian.mods.rhino.WrappedException;
 import dev.latvian.mods.rhino.util.HideFromJS;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.loading.FMLLoader;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -150,7 +150,7 @@ public class ConsoleJS {
 		} else if (capturingErrors != enabled) {
 			capturingErrors = enabled;
 
-			if (!FMLLoader.isProduction()) {
+			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
 				if (capturingErrors) {
 					logger.info("Capturing errors for " + scriptType.name + " scripts enabled");
 				} else {

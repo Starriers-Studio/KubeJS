@@ -4,7 +4,7 @@ import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.script.BindingRegistry;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.script.ScriptTypePredicate;
-import net.neoforged.neoforgespi.locating.IModFile;
+import net.fabricmc.loader.api.ModContainer;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -48,10 +48,10 @@ public class ModResourceBindings {
 		}
 	}
 
-	public void readBindings(String modId, IModFile mod) throws IOException {
-		var resource = mod.findResource("kubejs.bindings.txt");
-		if (Files.exists(resource)) {
-			try (var lines = Files.lines(resource)) {
+	public void readBindings(String modId, ModContainer mod) throws IOException {
+		var resource = mod.findPath(String.join("/", "kubejs.bindings.txt"));
+		if (resource.isPresent()) {
+			try (var lines = Files.lines(resource.get())) {
 				List<BindingProvider> providers = lines.map(s -> s.split("#", 2)[0].trim())
 					.filter(line -> !line.isBlank())
 					.map(line -> createProvider(modId, line))

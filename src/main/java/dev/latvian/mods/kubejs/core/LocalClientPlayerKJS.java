@@ -6,11 +6,11 @@ import dev.latvian.mods.kubejs.net.SendDataFromClientPayload;
 import dev.latvian.mods.kubejs.player.PlayerStatsJS;
 import dev.latvian.mods.kubejs.util.NotificationToastData;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 @RemapPrefixForJS("kjs$")
@@ -42,7 +42,7 @@ public interface LocalClientPlayerKJS extends ClientPlayerKJS {
 	@Override
 	default void kjs$sendData(String channel, @Nullable CompoundTag data) {
 		if (!channel.isEmpty()) {
-			PacketDistributor.sendToServer(new SendDataFromClientPayload(channel, data));
+			NetworkHelper.sendToServer(new SendDataFromClientPayload(channel, data));
 		}
 	}
 

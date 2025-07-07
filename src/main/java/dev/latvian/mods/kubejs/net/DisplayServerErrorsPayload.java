@@ -3,11 +3,11 @@ package dev.latvian.mods.kubejs.net;
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.script.ConsoleLine;
 import dev.latvian.mods.kubejs.script.ScriptType;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public record DisplayServerErrorsPayload(int scriptType, List<ConsoleLine> error
 		return KubeJSNet.DISPLAY_SERVER_ERRORS;
 	}
 
-	public void handle(IPayloadContext ctx) {
-		ctx.enqueueWork(() -> KubeJS.PROXY.openErrors(ScriptType.values()[scriptType], errors, warnings));
+	public static void handle(DisplayServerErrorsPayload payload, ClientPlayNetworking.Context ctx) {
+		ctx.client().execute(() -> KubeJS.PROXY.openErrors(ScriptType.values()[payload.scriptType], payload.errors, payload.warnings));
 	}
 }

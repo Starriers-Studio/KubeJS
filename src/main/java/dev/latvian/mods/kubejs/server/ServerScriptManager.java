@@ -27,14 +27,15 @@ import dev.latvian.mods.kubejs.server.tag.PreTagKubeEvent;
 import dev.latvian.mods.kubejs.util.Cast;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import me.textrue.kubejs.fabric.thirdparty.util.ServerLifecycleHooks;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.neoforge.registries.DataPackRegistriesHooks;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class ServerScriptManager extends ScriptManager {
 		manager.reload();
 		staticInstance = manager;
 
-		if (!FMLLoader.isProduction()) {
+		if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
 			KubeJS.LOGGER.info("Loaded " + packs.size() + " data packs: " + packs.stream().map(PackResources::packId).collect(Collectors.joining(", ")));
 		}
 
@@ -115,7 +116,7 @@ public class ServerScriptManager extends ScriptManager {
 		ConsoleJS.SERVER.startCapturingErrors();
 		super.loadFromDirectory();
 
-		if (FMLLoader.getDist().isDedicatedServer()) {
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
 			loadPackFromDirectory(KubeJSPaths.LOCAL_SERVER_SCRIPTS, "local server", true);
 		}
 	}
@@ -173,7 +174,7 @@ public class ServerScriptManager extends ScriptManager {
 
 				var codecs = new Reference2ObjectOpenHashMap<ResourceKey<?>, Codec<?>>();
 
-				for (var reg : DataPackRegistriesHooks.getDataPackRegistries()) {
+				for (var reg : DynamicRegistries.getDynamicRegistries()) {
 					var key = (ResourceKey) reg.key();
 					codecs.put(key, reg.elementCodec());
 

@@ -3,15 +3,15 @@ package dev.latvian.mods.kubejs.registry;
 import dev.latvian.mods.kubejs.DevProperties;
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.JavaWrapper;
+import dev.latvian.mods.kubejs.util.Lazy;
 import dev.latvian.mods.rhino.type.TypeInfo;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import me.textrue.kubejs.fabric.thirdparty.registries.ThirdPartyRegistries;
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Modifier;
@@ -112,7 +112,7 @@ public record RegistryType<T>(ResourceKey<Registry<T>> key, Class<?> baseClass, 
 		private static boolean frozen = false;
 
 		public static synchronized void init() {
-			processClass(Stream.of(Registries.class, NeoForgeRegistries.Keys.class));
+			processClass(Stream.of(Registries.class, ThirdPartyRegistries.Keys.class));
 		}
 
 		private static synchronized void startIfNotFrozen() {

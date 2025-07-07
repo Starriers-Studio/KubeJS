@@ -3,35 +3,38 @@ package dev.latvian.mods.kubejs.entity;
 import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 @Info("""
 	Invoked before an entity is hurt by a damage source.
 	""")
 public class BeforeLivingEntityHurtKubeEvent implements KubeLivingEntityEvent {
-	private final LivingDamageEvent.Pre event;
+	private final LivingEntity livingEntity;
+	private final DamageSource damageSource;
+	private float damage;
 
-	public BeforeLivingEntityHurtKubeEvent(LivingDamageEvent.Pre event) {
-		this.event = event;
+	public BeforeLivingEntityHurtKubeEvent(LivingEntity livingEntity, DamageSource source, float damage) {
+		this.livingEntity = livingEntity;
+		this.damageSource = source;
+		this.damage = damage;
 	}
 
 	@Override
 	@Info("The entity that was hurt.")
 	public LivingEntity getEntity() {
-		return event.getEntity();
+		return livingEntity;
 	}
 
 	@Info("The damage source.")
 	public DamageSource getSource() {
-		return event.getContainer().getSource();
+		return damageSource;
 	}
 
 	@Info("The amount of damage.")
 	public float getDamage() {
-		return event.getContainer().getNewDamage();
+		return damage;
 	}
 
 	public void setDamage(float damage) {
-		event.getContainer().setNewDamage(damage);
+		this.damage = damage;
 	}
 }

@@ -5,13 +5,13 @@ import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.generator.KubeResourceGenerator;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.TextIcons;
 import dev.latvian.mods.kubejs.script.ScriptType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.AbstractPackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.resources.IoSupplier;
-import net.neoforged.fml.loading.FMLLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -155,7 +155,7 @@ public class VirtualResourcePack extends AbstractPackResources implements KubeRe
 
 	@Override
 	public void close() {
-		if (!FMLLoader.isProduction()) {
+		if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
 			KubeJS.LOGGER.info("Closed " + packId());
 		}
 	}

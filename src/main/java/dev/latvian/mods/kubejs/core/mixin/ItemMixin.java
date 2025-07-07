@@ -114,7 +114,7 @@ public abstract class ItemMixin implements ItemKJS {
 	public <T> void kjs$overrideComponent(DataComponentType<T> type, @Nullable T value) {
 		var builder = DataComponentMap.builder().addAll(this.components);
 		builder.set(type, value);
-		this.components = Item.Properties.COMPONENT_INTERNER.intern(Item.Properties.validateComponents(builder.build()));
+		this.components = Item.Properties.COMPONENT_INTERNER.intern(Item.Properties.COMPONENT_INTERNER.intern(builder.build()));
 	}
 
 	@Override

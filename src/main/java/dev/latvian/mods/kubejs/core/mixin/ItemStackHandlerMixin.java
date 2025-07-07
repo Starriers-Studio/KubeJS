@@ -1,8 +1,8 @@
 package dev.latvian.mods.kubejs.core.mixin;
 
 import dev.latvian.mods.kubejs.CommonProperties;
-import net.neoforged.neoforge.items.ComponentItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import me.textrue.kubejs.fabric.thirdparty.items.ComponentItemHandler;
+import me.textrue.kubejs.fabric.thirdparty.items.ItemStackHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;

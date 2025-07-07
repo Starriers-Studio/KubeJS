@@ -63,7 +63,7 @@ public class BasicCropBlockJS extends CropBlock {
 		int age = this.getAge(blockState);
 		if (age < this.getMaxAge()) {
 			if (f < 0) {
-				f = getGrowthSpeed(blockState, serverLevel, blockPos);
+				f = getGrowthSpeed(blockState.getBlock(), serverLevel, blockPos);
 			}
 			if (f > 0 && random.nextInt((int) (25.0F / f) + 1) == 0) {
 				serverLevel.setBlock(blockPos, this.getStateForAge(age + 1), 2);

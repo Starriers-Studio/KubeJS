@@ -34,7 +34,8 @@ public record GeneratedData(ResourceLocation id, Supplier<byte[]> data) implemen
 
 	public static final GeneratedData PACK_ICON = new GeneratedData(KubeJS.id("textures/kubejs_logo.png"), () -> {
 		try {
-			return Files.readAllBytes(KubeJS.thisMod.getModInfo().getOwningFile().getFile().findResource("assets", "kubejs", "textures", "kubejs_logo.png"));
+			//return Files.readAllBytes(KubeJS.thisMod.getModInfo().getOwningFile().getFile().findResource("assets", "kubejs", "textures", "kubejs_logo.png"));
+			return Files.readAllBytes(KubeJS.thisMod.getContainingMod().orElseThrow().findPath("assets/kubejs/textures/kubejs_logo.png").orElseThrow());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return new byte[0];

@@ -18,6 +18,8 @@ import dev.latvian.mods.rhino.util.RemapPrefixForJS;
 import dev.latvian.mods.rhino.util.ReturnsSelf;
 import dev.latvian.mods.rhino.util.SpecialEquality;
 import dev.latvian.mods.rhino.util.ToStringJS;
+import me.textrue.kubejs.fabric.helper.ItemStackHelper;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.DataComponentIngredient;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -41,7 +43,6 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -226,7 +227,7 @@ public interface ItemStackKJS extends
 
 		builder.append(kjs$getId());
 
-		if (!is.isComponentsPatchEmpty()) {
+		if (!ItemStackHelper.isComponentsPatchEmpty(is)) {
 			DataComponentWrapper.patchToString(builder, dynamicOps, is.getComponentsPatch());
 		}
 

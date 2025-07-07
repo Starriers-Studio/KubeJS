@@ -6,9 +6,9 @@ import dev.latvian.mods.kubejs.recipe.match.Replaceable;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.SizedFluidIngredient;
 
 @RemapPrefixForJS("kjs$")
 public interface SizedFluidIngredientKJS extends Replaceable, FluidMatch {

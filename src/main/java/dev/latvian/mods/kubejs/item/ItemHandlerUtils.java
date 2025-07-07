@@ -20,14 +20,46 @@
 package dev.latvian.mods.kubejs.item;
 
 import dev.latvian.mods.kubejs.core.InventoryKJS;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 public class ItemHandlerUtils {
 	public static void giveItemToPlayer(Player player, @NotNull ItemStack stack, int preferredSlot) {
-		ItemHandlerHelper.giveItemToPlayer(player, stack, preferredSlot);
+		if (stack.isEmpty()) return;
+
+		InventoryKJS inventory = new PlayerMainInvWrapper(player.getInventory());
+		Level level = player.level();
+
+		// try adding it into the inventory
+		ItemStack remainder = stack;
+		// insert into preferred slot first
+		if (preferredSlot >= 0 && preferredSlot < inventory.kjs$getSlots()) {
+			remainder = inventory.kjs$insertItem(preferredSlot, stack, false);
+		}
+		// then into the inventory in general
+		if (!remainder.isEmpty()) {
+			remainder = insertItemStacked(inventory, remainder, false);
+		}
+
+		// play sound if something got picked up
+		if (remainder.isEmpty() || remainder.getCount() != stack.getCount()) {
+			level.playSound(null, player.getX(), player.getY() + 0.5, player.getZ(),
+				SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((level.random.nextFloat() - level.random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+		}
+
+		// drop remaining itemstack into the level
+		if (!remainder.isEmpty() && !level.isClientSide) {
+			ItemEntity entityitem = new ItemEntity(level, player.getX(), player.getY() + 0.5, player.getZ(), remainder);
+			entityitem.setPickUpDelay(40);
+			entityitem.setDeltaMovement(entityitem.getDeltaMovement().multiply(0, 1, 0));
+
+			level.addFreshEntity(entityitem);
+		}
 	}
 
 	@NotNull

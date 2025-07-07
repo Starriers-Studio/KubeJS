@@ -3,6 +3,7 @@ package dev.latvian.mods.kubejs.item.custom;
 import dev.latvian.mods.kubejs.generator.KubeAssetGenerator;
 import dev.latvian.mods.kubejs.item.ItemBuilder;
 import dev.latvian.mods.rhino.util.ReturnsSelf;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
@@ -12,12 +13,11 @@ import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.Tags;
 
 @ReturnsSelf
 public class ShearsItemBuilder extends ItemBuilder {
 	public static final ResourceLocation[] SHEAR_TAGS = {
-		Tags.Items.TOOLS_SHEAR.location(),
+		ConventionalItemTags.SHEAR_TOOLS.location(),
 	};
 
 	public static boolean isCustomShears(ItemStack stack) {

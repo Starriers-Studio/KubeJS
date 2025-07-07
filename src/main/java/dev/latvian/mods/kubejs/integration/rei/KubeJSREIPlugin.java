@@ -1,7 +1,6 @@
 package dev.latvian.mods.kubejs.integration.rei;
 
 import dev.architectury.event.EventResult;
-import dev.architectury.hooks.fluid.forge.FluidStackHooksForge;
 import dev.latvian.mods.kubejs.plugin.builtin.event.RecipeViewerEvents;
 import dev.latvian.mods.kubejs.recipe.viewer.RecipeViewerEntryType;
 import dev.latvian.mods.kubejs.recipe.viewer.server.RecipeViewerData;
@@ -22,15 +21,13 @@ import me.shedaniel.rei.api.common.plugins.PluginManager;
 import me.shedaniel.rei.api.common.registry.ReloadStage;
 import me.shedaniel.rei.api.common.util.EntryIngredients;
 import me.shedaniel.rei.api.common.util.EntryStacks;
-import me.shedaniel.rei.forge.REIPluginClient;
 import me.shedaniel.rei.plugin.client.BuiltinClientPlugin;
+import me.textrue.kubejs.fabric.helper.FluidStackHelper;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@REIPluginClient
 @SuppressWarnings("UnstableApiUsage")
 public class KubeJSREIPlugin implements REIClientPlugin {
 	private final Set<CategoryIdentifier<?>> categoriesRemoved = new HashSet<>();
@@ -48,7 +44,7 @@ public class KubeJSREIPlugin implements REIClientPlugin {
 	private RecipeViewerData remote = null;
 
 	public KubeJSREIPlugin() {
-		NeoForge.EVENT_BUS.register(this);
+		loadRemote();
 	}
 
 	/**
@@ -60,9 +56,10 @@ public class KubeJSREIPlugin implements REIClientPlugin {
 		return 1e7;
 	}
 
-	@SubscribeEvent
-	public void loadRemote(RemoteRecipeViewerDataUpdatedEvent event) {
-		remote = event.data;
+	public void loadRemote() {
+		RemoteRecipeViewerDataUpdatedEvent.EVENT.register(data -> {
+			remote = data;
+		});
 	}
 
 	@Override
@@ -81,7 +78,7 @@ public class KubeJSREIPlugin implements REIClientPlugin {
 			}
 
 			for (var stack : remote.fluidData().addedEntries()) {
-				registry.addEntries(EntryStacks.of(FluidStackHooksForge.fromForge(stack)));
+				registry.addEntries(EntryStacks.of(FluidStackHelper.thirdPartyToArch(stack)));
 			}
 		}
 	}
@@ -128,14 +125,14 @@ public class KubeJSREIPlugin implements REIClientPlugin {
 
 				for (var filter : remote.fluidData().removedEntries()) {
 					for (var entry : allFluids) {
-						if (filter.test(FluidStackHooksForge.toForge((dev.architectury.fluid.FluidStack) entry.getValue()))) {
+						if (filter.test(FluidStackHelper.archToThirdParty((dev.architectury.fluid.FluidStack) entry.getValue()))) {
 							registry.removeEntry(entry);
 						}
 					}
 				}
 
 				for (var filter : remote.fluidData().completelyRemovedEntries()) {
-					rule.hide(allFluids.stream().filter(e -> filter.test(FluidStackHooksForge.toForge((dev.architectury.fluid.FluidStack) e.getValue()))).toList());
+					rule.hide(allFluids.stream().filter(e -> filter.test(FluidStackHelper.archToThirdParty((dev.architectury.fluid.FluidStack) e.getValue()))).toList());
 				}
 			}
 		}
@@ -231,7 +228,7 @@ public class KubeJSREIPlugin implements REIClientPlugin {
 			}
 
 			for (var group : remote.fluidData().groupedEntries()) {
-				registry.group(group.groupId(), group.description(), e -> e.getType() == VanillaEntryTypes.FLUID && group.filter().test(FluidStackHooksForge.toForge((dev.architectury.fluid.FluidStack) e.getValue())));
+				registry.group(group.groupId(), group.description(), e -> e.getType() == VanillaEntryTypes.FLUID && group.filter().test(FluidStackHelper.archToThirdParty((dev.architectury.fluid.FluidStack) e.getValue())));
 			}
 		}
 	}

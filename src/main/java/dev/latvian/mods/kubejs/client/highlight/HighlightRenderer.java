@@ -19,6 +19,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -50,9 +52,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.client.RenderTypeHelper;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -287,11 +287,11 @@ public class HighlightRenderer {
 	}
 
 	private void requestBlock(BlockPos pos) {
-		PacketDistributor.sendToServer(new RequestBlockKubedexPayload(pos, getFlags()));
+		NetworkHelper.sendToServer(new RequestBlockKubedexPayload(pos, getFlags()));
 	}
 
 	private void requestEntity(Entity entity) {
-		PacketDistributor.sendToServer(new RequestEntityKubedexPayload(entity.getId(), getFlags()));
+		NetworkHelper.sendToServer(new RequestEntityKubedexPayload(entity.getId(), getFlags()));
 	}
 
 	private void requestInventory(Set<Slot> slots) {
@@ -300,7 +300,7 @@ public class HighlightRenderer {
 
 		for (var slot : slots) {
 			if (slot.container instanceof Inventory) {
-				slotIds.add(slot.getSlotIndex());
+				slotIds.add(slot.getContainerSlot());
 			} else {
 				var stack = slot.getItem();
 
@@ -310,7 +310,7 @@ public class HighlightRenderer {
 			}
 		}
 
-		PacketDistributor.sendToServer(new RequestInventoryKubedexPayload(slotIds, stacks, getFlags()));
+		NetworkHelper.sendToServer(new RequestInventoryKubedexPayload(slotIds, stacks, getFlags()));
 	}
 
 	private void keyToggled(Minecraft mc, Mode newMode, boolean success) {
@@ -346,12 +346,12 @@ public class HighlightRenderer {
 		}
 	}
 
-	public void renderAfterLevel(Minecraft mc, RenderLevelStageEvent event) {
+	public void renderAfterLevel(Minecraft mc, WorldRenderContext context) {
 		updateDepth(mc);
 		// renderAfterEntities(mc, event);
 
 		if (worldChain != null) {
-			worldChain.draw(mc, event.getPartialTick().getGameTimeDeltaPartialTick(false));
+			worldChain.draw(mc, context.tickCounter().getGameTimeDeltaPartialTick(false));
 		}
 	}
 
@@ -375,7 +375,7 @@ public class HighlightRenderer {
 		}
 	}
 
-	public void renderAfterEntities(Minecraft mc, RenderLevelStageEvent event) {
+	public void renderAfterEntities(Minecraft mc, WorldRenderContext context) {
 		if (mc.level == null || worldChain == null || highlightShader == null || highlightedBlocks.isEmpty() && highlightedEntities.isEmpty()) {
 			return;
 		}
@@ -383,9 +383,9 @@ public class HighlightRenderer {
 		mc.renderBuffers().bufferSource().endBatch();
 		worldChain.renderInput.bindWrite(false);
 
-		var ms = event.getPoseStack();
-		var cam = event.getCamera().getPosition();
-		var delta = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+		var ms = context.matrixStack();
+		var cam = context.camera().getPosition();
+		var delta = context.tickCounter().getGameTimeDeltaPartialTick(false);
 
 		ms.pushPose();
 		ms.translate(-cam.x, -cam.y, -cam.z);

@@ -2,7 +2,8 @@ package dev.latvian.mods.kubejs;
 
 import dev.latvian.mods.kubejs.script.ScriptManager;
 import dev.latvian.mods.kubejs.script.ScriptType;
-import net.neoforged.fml.loading.FMLLoader;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class StartupScriptManager extends ScriptManager {
 	public StartupScriptManager() {
@@ -13,7 +14,7 @@ public class StartupScriptManager extends ScriptManager {
 	public void loadFromDirectory() {
 		super.loadFromDirectory();
 
-		if (FMLLoader.getDist().isDedicatedServer()) {
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
 			loadPackFromDirectory(KubeJSPaths.LOCAL_STARTUP_SCRIPTS, "local startup", true);
 		}
 	}

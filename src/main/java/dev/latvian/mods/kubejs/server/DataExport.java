@@ -14,10 +14,10 @@ import dev.latvian.mods.kubejs.util.JsonUtils;
 import dev.latvian.mods.kubejs.util.LogType;
 import dev.latvian.mods.kubejs.util.TimeJS;
 import dev.latvian.mods.rhino.util.HideFromJS;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.ModList;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -126,12 +126,12 @@ public class DataExport {
 
 		var modArr = new JsonArray();
 
-		for (var mod : ModList.get().getMods()) {
+		for (var mod : FabricLoader.getInstance().getAllMods()) {
 			var o = new JsonObject();
-			o.addProperty("id", mod.getModId().trim());
-			o.addProperty("name", mod.getDisplayName().trim());
-			o.addProperty("version", mod.getVersion().toString().trim());
-			o.addProperty("description", mod.getDescription().trim());
+			o.addProperty("id", mod.getMetadata().getId().trim());
+			o.addProperty("name", mod.getMetadata().getName().trim());
+			o.addProperty("version", mod.getMetadata().getVersion().toString().trim());
+			o.addProperty("description", mod.getMetadata().getDescription().trim());
 			// FIXME
 			// o.addProperty("authors", String.join(", ", mod.getAuthors()).trim());
 			// o.addProperty("homepage", mod.getHomepage().orElse("").trim());

@@ -2,6 +2,7 @@ package dev.latvian.mods.kubejs.core;
 
 import dev.latvian.mods.kubejs.player.EntityArrayList;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.thirdparty.util.ThirdPartyContexts;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -36,7 +37,7 @@ public interface EntityCollectionKJS {
 	}
 
 	default EntityArrayList kjs$getEntitiesWithin(AABB aabb) {
-		if (aabb == null || aabb == AABB.INFINITE) {
+		if (aabb == null || aabb == ThirdPartyContexts.AABB_INFINITE) {
 			return kjs$getEntities();
 		}
 

@@ -2,10 +2,10 @@ package dev.latvian.mods.kubejs.net;
 
 import dev.latvian.mods.kubejs.KubeJS;
 import io.netty.buffer.ByteBuf;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ReloadStartupScriptsPayload(boolean dedicated) implements CustomPacketPayload {
 	public static final StreamCodec<ByteBuf, ReloadStartupScriptsPayload> STREAM_CODEC = ByteBufCodecs.BOOL.map(ReloadStartupScriptsPayload::new, ReloadStartupScriptsPayload::dedicated);
@@ -15,7 +15,7 @@ public record ReloadStartupScriptsPayload(boolean dedicated) implements CustomPa
 		return KubeJSNet.RELOAD_STARTUP_SCRIPTS;
 	}
 
-	public void handle(IPayloadContext ctx) {
-		ctx.enqueueWork(() -> KubeJS.PROXY.reloadStartupScripts(dedicated));
+	public static void handle(ReloadStartupScriptsPayload payload, ClientPlayNetworking.Context ctx) {
+		ctx.client().execute(() -> KubeJS.PROXY.reloadStartupScripts(payload.dedicated));
 	}
 }

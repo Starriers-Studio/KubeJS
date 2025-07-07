@@ -16,8 +16,8 @@ import dev.latvian.mods.kubejs.util.ScheduledEvents;
 import dev.latvian.mods.kubejs.web.LocalWebServerAPIRegistry;
 import dev.latvian.mods.kubejs.web.LocalWebServerRegistry;
 import dev.latvian.mods.kubejs.web.local.client.KubeJSClientWeb;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
-import net.neoforged.fml.ModList;
 
 public class BuiltinKubeJSClientPlugin implements KubeJSPlugin {
 	@Override
@@ -62,7 +62,7 @@ public class BuiltinKubeJSClientPlugin implements KubeJSPlugin {
 		event.add(KubeJS.MOD_ID, "key.categories.kubejs", "KubeJS");
 		event.add(KubeJS.MOD_ID, "key.kubejs.kubedex", "Kubedex");
 
-		if (ModList.get().isLoaded("jade")) {
+		if (FabricLoader.getInstance().isModLoaded("jade")) {
 			for (var mod : PlatformWrapper.getMods().values()) {
 				if (!mod.getCustomName().isEmpty()) {
 					event.add(KubeJS.MOD_ID, "jade.modName." + mod.getId(), mod.getCustomName());

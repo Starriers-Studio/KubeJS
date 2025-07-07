@@ -1,12 +1,9 @@
 package dev.latvian.mods.kubejs.net;
 
 import dev.latvian.mods.kubejs.KubeJS;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
-@EventBusSubscriber(modid = KubeJS.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public interface KubeJSNet {
 	private static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> type(String id) {
 		return new CustomPacketPayload.Type<>(KubeJS.id(id));
@@ -33,27 +30,24 @@ public interface KubeJSNet {
 		CustomPacketPayload.Type<RequestEntityKubedexPayload> REQUEST_ENTITY = type("kubedex/request_entity");
 	}
 
-	@SubscribeEvent
-	static void register(RegisterPayloadHandlersEvent event) {
-		var reg = event.registrar("1").optional();
+	static void register() {
+		NetworkHelper.playToClient(WEB_SERVER_JSON_UPDATE, WebServerUpdateJSONPayload.STREAM_CODEC, WebServerUpdateJSONPayload::handle);
+		NetworkHelper.playToClient(WEB_SERVER_NBT_UPDATE, WebServerUpdateNBTPayload.STREAM_CODEC, WebServerUpdateNBTPayload::handle);
+		NetworkHelper.playToServer(SEND_DATA_FROM_CLIENT, SendDataFromClientPayload.STREAM_CODEC, SendDataFromClientPayload::handle);
+		NetworkHelper.playToClient(SEND_DATA_FROM_SERVER, SendDataFromServerPayload.STREAM_CODEC, SendDataFromServerPayload::handle);
+		NetworkHelper.playToClient(ADD_STAGE, AddStagePayload.STREAM_CODEC, AddStagePayload::handle);
+		NetworkHelper.playToClient(REMOVE_STAGE, RemoveStagePayload.STREAM_CODEC, RemoveStagePayload::handle);
+		NetworkHelper.playToClient(SYNC_STAGES, SyncStagesPayload.STREAM_CODEC, SyncStagesPayload::handle);
+		NetworkHelper.playToServer(FIRST_CLICK, FirstClickPayload.STREAM_CODEC, FirstClickPayload::handle);
+		NetworkHelper.playToClient(NOTIFICATION, NotificationPayload.STREAM_CODEC, NotificationPayload::handle);
+		NetworkHelper.playToClient(RELOAD_STARTUP_SCRIPTS, ReloadStartupScriptsPayload.STREAM_CODEC, ReloadStartupScriptsPayload::handle);
+		NetworkHelper.playToClient(DISPLAY_SERVER_ERRORS, DisplayServerErrorsPayload.STREAM_CODEC, DisplayServerErrorsPayload::handle);
+		NetworkHelper.playToClient(DISPLAY_CLIENT_ERRORS, DisplayClientErrorsPayload.STREAM_CODEC, DisplayClientErrorsPayload::handle);
+		NetworkHelper.playToClient(SYNC_SERVER_DATA, SyncServerDataPayload.STREAM_CODEC, SyncServerDataPayload::handle);
+		NetworkHelper.playToClient(SET_ACTIVE_POST_SHADER, SetActivePostShaderPayload.STREAM_CODEC, SetActivePostShaderPayload::handle);
 
-		reg.playToClient(WEB_SERVER_JSON_UPDATE, WebServerUpdateJSONPayload.STREAM_CODEC, WebServerUpdateJSONPayload::handle);
-		reg.playToClient(WEB_SERVER_NBT_UPDATE, WebServerUpdateNBTPayload.STREAM_CODEC, WebServerUpdateNBTPayload::handle);
-		reg.playToServer(SEND_DATA_FROM_CLIENT, SendDataFromClientPayload.STREAM_CODEC, SendDataFromClientPayload::handle);
-		reg.playToClient(SEND_DATA_FROM_SERVER, SendDataFromServerPayload.STREAM_CODEC, SendDataFromServerPayload::handle);
-		reg.playToClient(ADD_STAGE, AddStagePayload.STREAM_CODEC, AddStagePayload::handle);
-		reg.playToClient(REMOVE_STAGE, RemoveStagePayload.STREAM_CODEC, RemoveStagePayload::handle);
-		reg.playToClient(SYNC_STAGES, SyncStagesPayload.STREAM_CODEC, SyncStagesPayload::handle);
-		reg.playToServer(FIRST_CLICK, FirstClickPayload.STREAM_CODEC, FirstClickPayload::handle);
-		reg.playToClient(NOTIFICATION, NotificationPayload.STREAM_CODEC, NotificationPayload::handle);
-		reg.playToClient(RELOAD_STARTUP_SCRIPTS, ReloadStartupScriptsPayload.STREAM_CODEC, ReloadStartupScriptsPayload::handle);
-		reg.playToClient(DISPLAY_SERVER_ERRORS, DisplayServerErrorsPayload.STREAM_CODEC, DisplayServerErrorsPayload::handle);
-		reg.playToClient(DISPLAY_CLIENT_ERRORS, DisplayClientErrorsPayload.STREAM_CODEC, DisplayClientErrorsPayload::handle);
-		reg.playToClient(SYNC_SERVER_DATA, SyncServerDataPayload.STREAM_CODEC, SyncServerDataPayload::handle);
-		reg.playToClient(SET_ACTIVE_POST_SHADER, SetActivePostShaderPayload.STREAM_CODEC, SetActivePostShaderPayload::handle);
-
-		reg.playToServer(Kubedex.REQUEST_INVENTORY, RequestInventoryKubedexPayload.STREAM_CODEC, RequestInventoryKubedexPayload::handle);
-		reg.playToServer(Kubedex.REQUEST_BLOCK, RequestBlockKubedexPayload.STREAM_CODEC, RequestBlockKubedexPayload::handle);
-		reg.playToServer(Kubedex.REQUEST_ENTITY, RequestEntityKubedexPayload.STREAM_CODEC, RequestEntityKubedexPayload::handle);
+		NetworkHelper.playToServer(Kubedex.REQUEST_INVENTORY, RequestInventoryKubedexPayload.STREAM_CODEC, RequestInventoryKubedexPayload::handle);
+		NetworkHelper.playToServer(Kubedex.REQUEST_BLOCK, RequestBlockKubedexPayload.STREAM_CODEC, RequestBlockKubedexPayload::handle);
+		NetworkHelper.playToServer(Kubedex.REQUEST_ENTITY, RequestEntityKubedexPayload.STREAM_CODEC, RequestEntityKubedexPayload::handle);
 	}
 }

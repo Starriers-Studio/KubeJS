@@ -25,8 +25,8 @@ public interface IngredientAction {
 			}
 		}
 
-		if (stack.hasCraftingRemainingItem()) {
-			return stack.getCraftingRemainingItem();
+		if (stack.getItem().hasCraftingRemainingItem()) {
+			return stack.getItem().getCraftingRemainingItem().getDefaultInstance();
 		}
 
 		return ItemStack.EMPTY;

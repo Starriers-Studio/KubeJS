@@ -7,6 +7,7 @@ import dev.latvian.mods.kubejs.client.VariantBlockStateGenerator;
 import dev.latvian.mods.kubejs.generator.KubeAssetGenerator;
 import dev.latvian.mods.kubejs.util.ID;
 import dev.latvian.mods.rhino.util.ReturnsSelf;
+import me.textrue.kubejs.fabric.helper.ItemStackHelper;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -196,7 +197,7 @@ public class DoorBlockBuilder extends ShapedBlockBuilder {
 				item.apply(SetItemCountFunction.setCount(ConstantValue.exactly(drop.getCount())));
 			}
 
-			if (!drop.isComponentsPatchEmpty()) {
+			if (!ItemStackHelper.isComponentsPatchEmpty(drop)) {
 				item.apply(LootItemConditionalFunction.simpleBuilder(c -> new SetComponentsFunction(c, drop.getComponentsPatch())));
 			}
 

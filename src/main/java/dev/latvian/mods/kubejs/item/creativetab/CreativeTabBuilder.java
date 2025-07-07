@@ -2,6 +2,7 @@ package dev.latvian.mods.kubejs.item.creativetab;
 
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.rhino.util.ReturnsSelf;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
@@ -19,7 +20,7 @@ public class CreativeTabBuilder extends BuilderBase<CreativeModeTab> {
 
 	@Override
 	public CreativeModeTab createObject() {
-		return CreativeModeTab.builder()
+		return FabricItemGroup.builder()
 			.title(displayName == null ? Component.translatable(getBuilderTranslationKey()) : displayName)
 			.icon(new CreativeTabIconSupplier.Wrapper(icon))
 			.displayItems(new CreativeTabContentSupplier.Wrapper(content))

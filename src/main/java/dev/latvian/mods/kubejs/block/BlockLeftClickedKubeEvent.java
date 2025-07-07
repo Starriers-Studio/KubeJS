@@ -3,41 +3,56 @@ package dev.latvian.mods.kubejs.block;
 import dev.latvian.mods.kubejs.level.LevelBlock;
 import dev.latvian.mods.kubejs.player.KubePlayerEvent;
 import dev.latvian.mods.kubejs.typings.Info;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 @Info(value = """
 	Invoked when a player left clicks on a block.
 	""")
 public class BlockLeftClickedKubeEvent implements KubePlayerEvent {
-	private final PlayerInteractEvent.LeftClickBlock event;
+	private final Player player;
+	private final Level level;
+	private final InteractionHand hand;
+	private final BlockPos pos;
+	private final Direction direction;
+	private LevelBlock block;
 
-	public BlockLeftClickedKubeEvent(PlayerInteractEvent.LeftClickBlock event) {
-		this.event = event;
+	public BlockLeftClickedKubeEvent(Player player, Level level, InteractionHand hand, BlockPos pos, Direction direction) {
+		this.player = player;
+		this.level = level;
+		this.hand = hand;
+		this.pos = pos;
+		this.direction = direction;
 	}
 
 	@Override
 	@Info("The player that left clicked the block.")
 	public Player getEntity() {
-		return event.getEntity();
+		return player;
 	}
 
 	@Info("The block that was left clicked.")
 	public LevelBlock getBlock() {
-		return event.getLevel().kjs$getBlock(event.getPos());
+		if (block == null) {
+			block = level.kjs$getBlock(pos);
+		}
+
+		return block;
 	}
 
 	@Info("The item that was used to left click the block.")
 	public ItemStack getItem() {
-		return event.getEntity().getItemInHand(event.getHand());
+		return player.getItemInHand(hand);
 	}
 
 	@Info("The face of the block that was left clicked.")
 	@Nullable
 	public Direction getFacing() {
-		return event.getFace();
+		return direction;
 	}
 }

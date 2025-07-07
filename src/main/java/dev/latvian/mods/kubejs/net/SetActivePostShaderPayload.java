@@ -1,11 +1,11 @@
 package dev.latvian.mods.kubejs.net;
 
 import io.netty.buffer.ByteBuf;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Optional;
 
@@ -17,7 +17,7 @@ public record SetActivePostShaderPayload(Optional<ResourceLocation> id) implemen
 		return KubeJSNet.SET_ACTIVE_POST_SHADER;
 	}
 
-	public void handle(IPayloadContext ctx) {
-		ctx.enqueueWork(() -> ctx.player().kjs$setActivePostShader(id.orElse(null)));
+	public static void handle(SetActivePostShaderPayload payload, ClientPlayNetworking.Context ctx) {
+		ctx.client().execute(() -> ctx.player().kjs$setActivePostShader(payload.id.orElse(null)));
 	}
 }

@@ -1,15 +1,15 @@
 package dev.latvian.mods.kubejs.gui;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.IContainerFactory;
 
 public class KubeJSMenu extends AbstractContainerMenu {
-	public static final IContainerFactory<KubeJSMenu> FACTORY = KubeJSMenu::new;
+	public static final ExtendedScreenHandlerType.ExtendedFactory<KubeJSMenu, KubeJSGUI> FACTORY = KubeJSMenu::new;
 
 	public final Player player;
 	public final KubeJSGUI guiData;

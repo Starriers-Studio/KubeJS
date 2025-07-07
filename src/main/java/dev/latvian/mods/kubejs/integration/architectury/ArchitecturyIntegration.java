@@ -1,14 +1,16 @@
 package dev.latvian.mods.kubejs.integration.architectury;
 
-import dev.architectury.hooks.fluid.forge.FluidStackHooksForge;
+import dev.architectury.hooks.fluid.fabric.FluidStackHooksFabric;
 import dev.latvian.mods.kubejs.fluid.FluidWrapper;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
 import dev.latvian.mods.kubejs.script.TypeWrapperRegistry;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
 
 public class ArchitecturyIntegration implements KubeJSPlugin {
 	public static dev.architectury.fluid.FluidStack wrapArchFluid(RegistryAccessContainer registries, Object o) {
-		return FluidStackHooksForge.fromForge(FluidWrapper.wrap(registries, o));
+		FluidStack fluidStack = FluidWrapper.wrap(registries, o);
+		return FluidStackHooksFabric.fromFabric(fluidStack.getVariant(), fluidStack.getAmount());
 	}
 
 	@Override

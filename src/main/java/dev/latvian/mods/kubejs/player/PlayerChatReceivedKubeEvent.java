@@ -1,34 +1,36 @@
 package dev.latvian.mods.kubejs.player;
 
+import me.textrue.kubejs.fabric.thirdparty.events.ServerChatEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.event.ServerChatEvent;
 
 public class PlayerChatReceivedKubeEvent implements KubePlayerEvent {
-	private final ServerChatEvent event;
+	private final ServerPlayer serverPlayer;
+	private final ServerChatEvents.ChatComponent chatComponent;
 
-	public PlayerChatReceivedKubeEvent(ServerChatEvent event) {
-		this.event = event;
+	public PlayerChatReceivedKubeEvent(ServerPlayer serverPlayer, ServerChatEvents.ChatComponent chatComponent) {
+		this.serverPlayer = serverPlayer;
+		this.chatComponent = chatComponent;
 	}
 
 	@Override
 	public ServerPlayer getEntity() {
-		return event.getPlayer();
+		return serverPlayer;
 	}
 
 	public String getUsername() {
-		return event.getPlayer().getGameProfile().getName();
+		return serverPlayer.getGameProfile().getName();
 	}
 
 	public String getMessage() {
-		return event.getRawText();
+		return chatComponent.getMessage().getString();
 	}
 
 	public Component getComponent() {
-		return event.getMessage();
+		return chatComponent.getMessage();
 	}
 
 	public void setComponent(Component component) {
-		event.setMessage(component);
+		chatComponent.setMessage(component);
 	}
 }

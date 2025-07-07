@@ -4,6 +4,7 @@ import com.mojang.serialization.JsonOps;
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.web.local.KubeJSWeb;
 import io.netty.buffer.ByteBuf;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -11,7 +12,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Optional;
 
@@ -28,11 +28,11 @@ public record WebServerUpdateNBTPayload(String event, String requiredTag, Option
 		return KubeJSNet.WEB_SERVER_NBT_UPDATE;
 	}
 
-	public void handle(IPayloadContext ctx) {
-		int count = KubeJSWeb.broadcastUpdate("server/" + event, requiredTag, () -> payload.map(tag -> NbtOps.INSTANCE.convertTo(JsonOps.INSTANCE, tag)).orElse(null));
+	public static void handle(WebServerUpdateNBTPayload nbtPayload, ClientPlayNetworking.Context ctx) {
+		int count = KubeJSWeb.broadcastUpdate("server/" + nbtPayload.event, nbtPayload.requiredTag, () -> nbtPayload.payload.map(tag -> NbtOps.INSTANCE.convertTo(JsonOps.INSTANCE, tag)).orElse(null));
 
-		if (count == 0 && event.equals("highlight/items")) {
-			for (var e : ((CompoundTag) payload.get()).getList("items", Tag.TAG_COMPOUND)) {
+		if (count == 0 && nbtPayload.event.equals("highlight/items")) {
+			for (var e : ((CompoundTag) nbtPayload.payload.get()).getList("items", Tag.TAG_COMPOUND)) {
 				var t = (CompoundTag) e;
 				KubeJS.LOGGER.info("[Highlighted Item] " + t.getString("string"));
 

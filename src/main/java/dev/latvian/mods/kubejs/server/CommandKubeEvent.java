@@ -1,17 +1,18 @@
 package dev.latvian.mods.kubejs.server;
 
 import com.mojang.brigadier.ParseResults;
+import me.textrue.kubejs.fabric.thirdparty.events.CommandPerformEvent;
 import net.minecraft.commands.CommandSourceStack;
-import net.neoforged.neoforge.event.CommandEvent;
+
 
 public class CommandKubeEvent extends ServerKubeEvent {
-	private final CommandEvent event;
+	private final CommandPerformEvent event;
 	private final String commandName;
 
-	public CommandKubeEvent(CommandEvent event) {
-		super(event.getParseResults().getContext().getSource().getServer());
+	public CommandKubeEvent(CommandPerformEvent event) {
+		super(event.getResults().getContext().getSource().getServer());
 		this.event = event;
-		this.commandName = event.getParseResults().getContext().getNodes().isEmpty() ? "" : event.getParseResults().getContext().getNodes().getFirst().getNode().getName();
+		this.commandName = event.getResults().getContext().getNodes().isEmpty() ? "" : event.getResults().getContext().getNodes().getFirst().getNode().getName();
 	}
 
 	public String getCommandName() {
@@ -19,22 +20,22 @@ public class CommandKubeEvent extends ServerKubeEvent {
 	}
 
 	public String getInput() {
-		return event.getParseResults().getReader().getString();
+		return event.getResults().getReader().getString();
 	}
 
 	public ParseResults<CommandSourceStack> getParseResults() {
-		return event.getParseResults();
+		return event.getResults();
 	}
 
 	public void setParseResults(ParseResults<CommandSourceStack> parse) {
-		event.setParseResults(parse);
+		event.setResults(parse);
 	}
 
 	public Throwable getException() {
-		return event.getException();
+		return event.getThrowable();
 	}
 
 	public void setException(Throwable exception) {
-		event.setException(exception);
+		event.setThrowable(exception);
 	}
 }

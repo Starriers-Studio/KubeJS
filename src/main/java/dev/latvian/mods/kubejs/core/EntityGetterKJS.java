@@ -2,6 +2,7 @@ package dev.latvian.mods.kubejs.core;
 
 import dev.latvian.mods.kubejs.player.EntityArrayList;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.thirdparty.util.ThirdPartyContexts;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.EntityGetter;
@@ -27,7 +28,7 @@ public interface EntityGetterKJS extends EntityCollectionKJS {
 
 	@Override
 	default Iterable<? extends Entity> kjs$getMcEntities() {
-		return kjs$self().getEntities((Entity) null, AABB.INFINITE, EntityArrayList.ALWAYS_TRUE_PREDICATE);
+		return kjs$self().getEntities((Entity) null, ThirdPartyContexts.AABB_INFINITE, EntityArrayList.ALWAYS_TRUE_PREDICATE);
 	}
 
 	@Override

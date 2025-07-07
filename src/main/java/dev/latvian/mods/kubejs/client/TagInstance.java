@@ -54,6 +54,6 @@ public class TagInstance implements Comparable<TagInstance> {
 
 	@Override
 	public int compareTo(@NotNull TagInstance o) {
-		return tag.compareNamespaced(o.tag);
+		return tag.compareTo(o.tag);
 	}
 }

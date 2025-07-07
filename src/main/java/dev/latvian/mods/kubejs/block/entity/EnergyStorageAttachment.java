@@ -2,13 +2,14 @@ package dev.latvian.mods.kubejs.block.entity;
 
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.DirectionWrapper;
+import me.textrue.kubejs.fabric.thirdparty.util.ThirdPartyContexts;
+import me.textrue.kubejs.fabric.thirdparty.util.TransferUtil;
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
+import team.reborn.energy.api.EnergyStorage;
+import team.reborn.energy.api.base.SimpleSidedEnergyContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,28 +33,35 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 		}
 
 		@Override
-		public List<BlockCapability<?, ?>> getCapabilities() {
-			return List.of(Capabilities.EnergyStorage.BLOCK);
+		public List<BlockApiLookup<?, ?>> getCapabilities() {
+			BlockApiLookup<EnergyStorage, Direction> lookup = BlockApiLookup.get(ThirdPartyContexts.ENERGY_STORAGE_BLOCK_ID, EnergyStorage.class, Direction.class);
+			return List.of(lookup);
 		}
 	}
 
-	public static class Wrapped extends EnergyStorage {
+	public static class Wrapped extends SimpleSidedEnergyContainer {
 		private final EnergyStorageAttachment attachment;
+		private final int capacity;
+		private final int maxReceive;
+		private final int maxExtract;
 
 		public Wrapped(EnergyStorageAttachment attachment, int capacity, int maxReceive, int maxExtract) {
-			super(capacity, maxReceive, maxExtract);
+			//super(capacity, maxReceive, maxExtract);
 			this.attachment = attachment;
+			this.capacity = capacity;
+			this.maxReceive = maxReceive;
+			this.maxExtract = maxExtract;
 		}
 
 		public void setEnergyStored(int energy) {
-			this.energy = Mth.clamp(energy, 0, capacity);
+			this.amount = Mth.clamp(energy, 0, capacity);
 		}
 
 		public int addEnergy(int add, boolean simulate) {
-			int i = Mth.clamp(this.capacity - this.energy, 0, add);
+			int i = Math.toIntExact(Mth.clamp(this.capacity - this.amount, 0, add));
 
 			if (!simulate && i > 0) {
-				energy += i;
+				amount += i;
 				attachment.entity.save();
 			}
 
@@ -61,10 +69,10 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 		}
 
 		public int removeEnergy(int remove, boolean simulate) {
-			int i = Math.max(energy, remove);
+			int i = Math.toIntExact(Math.max(amount, remove));
 
 			if (!simulate && i > 0) {
-				energy -= i;
+				amount -= i;
 				attachment.entity.save();
 			}
 
@@ -72,9 +80,9 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 		}
 
 		public boolean useEnergy(int use, boolean simulate) {
-			if (energy >= use) {
+			if (amount >= use) {
 				if (!simulate) {
-					energy -= use;
+					amount -= use;
 					attachment.entity.save();
 				}
 
@@ -85,10 +93,10 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 		}
 
 		@Override
-		public int extractEnergy(int toExtract, boolean simulate) {
-			int s = super.extractEnergy(toExtract, simulate);
+		public long getMaxExtract(@Nullable Direction side) {
+			int s = Math.toIntExact(((SimpleSidedEnergyContainer) this).getMaxExtract(side));
 
-			if (s > 0 && !simulate && !attachment.entity.getLevel().isClientSide()) {
+			if (s > 0 && !attachment.entity.getLevel().isClientSide()) {
 				attachment.entity.save();
 			}
 
@@ -96,14 +104,19 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 		}
 
 		@Override
-		public int receiveEnergy(int toReceive, boolean simulate) {
-			int s = super.receiveEnergy(toReceive, simulate);
+		public long getMaxInsert(@Nullable Direction side) {
+			int s = Math.toIntExact(((SimpleSidedEnergyContainer) this).getMaxInsert(side));
 
-			if (s > 0 && !simulate && !attachment.entity.getLevel().isClientSide()) {
+			if (s > 0 && !attachment.entity.getLevel().isClientSide()) {
 				attachment.entity.save();
 			}
 
 			return s;
+		}
+
+		@Override
+		public long getCapacity() {
+			return 0;
 		}
 	}
 
@@ -126,8 +139,8 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 
 	@Override
 	@Nullable
-	public <CAP, SRC> CAP getCapability(BlockCapability<CAP, SRC> capability) {
-		if (capability == Capabilities.EnergyStorage.BLOCK) {
+	public <CAP, SRC> CAP getCapability(BlockApiLookup<CAP, SRC> capability) {
+		if (capability == BlockApiLookup.get(ThirdPartyContexts.ENERGY_STORAGE_BLOCK_ID, EnergyStorage.class, Direction.class)) {
 			return (CAP) energyStorage;
 		}
 
@@ -137,10 +150,12 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 	@Override
 	public void serverTick() {
 		if (autoOutputDirections.length > 0 && autoOutput > 0) {
-			var list = new ArrayList<IEnergyStorage>(1);
+			var list = new ArrayList<EnergyStorage>(1);
 
 			for (var dir : autoOutputDirections) {
-				var c = Capabilities.EnergyStorage.BLOCK.getCapability(entity.getLevel(), entity.getBlockPos().relative(dir), null, null, dir.getOpposite());
+				BlockApiLookup<EnergyStorage, Direction> lookup = BlockApiLookup.get(ThirdPartyContexts.ENERGY_STORAGE_BLOCK_ID, EnergyStorage.class, Direction.class);
+				//var c = Capabilities.EnergyStorage.BLOCK.getCapability(entity.getLevel(), entity.getBlockPos().relative(dir), null, null, dir.getOpposite());
+				var c = lookup.find(entity.getLevel(), entity.getBlockPos().relative(dir), dir.getOpposite());
 
 				if (c != null && c != energyStorage) {
 					list.add(c);
@@ -148,14 +163,14 @@ public class EnergyStorageAttachment implements BlockEntityAttachment {
 			}
 
 			if (!list.isEmpty()) {
-				int draw = Math.min(autoOutput, energyStorage.getEnergyStored()) / list.size();
+				int draw = Math.toIntExact(Math.min(autoOutput, energyStorage.getCapacity()) / list.size());
 
 				if (draw > 0) {
 					for (var c : list) {
-						int e = energyStorage.extractEnergy(draw, true);
+						int e = Math.toIntExact(c.extract(draw, TransferUtil.getTransaction()));
 
 						if (e > 0) {
-							energyStorage.extractEnergy(c.receiveEnergy(e, false), false);
+							c.extract(c.insert(e, TransferUtil.getTransaction()), TransferUtil.getTransaction());
 						} else {
 							break;
 						}

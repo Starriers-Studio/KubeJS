@@ -2,9 +2,9 @@ package dev.latvian.mods.kubejs.fluid;
 
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.block.BlockRenderType;
+import me.textrue.kubejs.fabric.thirdparty.sounds.SoundActions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.neoforged.neoforge.common.SoundActions;
 
 public class ThickFluidBuilder extends FluidBuilder {
 	public ThickFluidBuilder(ResourceLocation i) {

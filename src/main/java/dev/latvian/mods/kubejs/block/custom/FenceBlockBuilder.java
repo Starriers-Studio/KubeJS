@@ -7,12 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FenceBlock;
-import net.neoforged.neoforge.common.Tags;
 
 public class FenceBlockBuilder extends ShapedBlockBuilder {
 	public static final ResourceLocation[] FENCE_TAGS = {
 		BlockTags.FENCES.location(),
-		Tags.Blocks.FENCES.location(),
+		//ConventionalBlockTags.FENCES.location(),
 	};
 
 	private static final ResourceLocation SIDE_MODEL = ResourceLocation.withDefaultNamespace("block/fence_side");

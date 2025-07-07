@@ -4,7 +4,7 @@ import dev.latvian.mods.kubejs.block.entity.BlockEntityAttachmentInfo;
 import dev.latvian.mods.kubejs.block.entity.BlockEntityBuilder;
 import dev.latvian.mods.kubejs.block.entity.KubeBlockEntity;
 import dev.latvian.mods.kubejs.event.KubeStartupEvent;
-import dev.latvian.mods.kubejs.item.creativetab.CreativeTabCallbackForge;
+import dev.latvian.mods.kubejs.item.creativetab.CreativeTabCallbackFabric;
 import dev.latvian.mods.kubejs.item.creativetab.CreativeTabKubeEvent;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugins;
@@ -15,54 +15,40 @@ import dev.latvian.mods.kubejs.script.ConsoleLine;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.script.ScriptsLoadedEvent;
 import dev.latvian.mods.kubejs.util.UtilsJS;
-import net.minecraft.Util;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
 
-@EventBusSubscriber(modid = KubeJS.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
-public class KubeJSModEventHandler {
-	/*
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void commonSetup(FMLCommonSetupEvent event) {
-	}
-	 */
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void creativeTab(BuildCreativeModeTabContentsEvent event) {
-		var tabId = event.getTabKey().location();
+public class KubeJSModEventHandler {
+
+	public static void init() {
+		ItemGroupEvents.MODIFY_ENTRIES_ALL.register(KubeJSModEventHandler::creativeTab);
+		registerCapabilities();
+	}
+
+	public static void creativeTab(CreativeModeTab group, FabricItemGroupEntries entries) {
+		var tabId = BuiltInRegistries.CREATIVE_MODE_TAB.getKey(group);
 
 		if (StartupEvents.MODIFY_CREATIVE_TAB.hasListeners(tabId)) {
-			StartupEvents.MODIFY_CREATIVE_TAB.post(ScriptType.STARTUP, tabId, new CreativeTabKubeEvent(event.getTab(), event.hasPermissions(), new CreativeTabCallbackForge(event)));
+			StartupEvents.MODIFY_CREATIVE_TAB.post(ScriptType.STARTUP, tabId, new CreativeTabKubeEvent(group, entries.shouldShowOpRestrictedItems(), new CreativeTabCallbackFabric(entries)));
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void loadComplete(FMLLoadCompleteEvent event) {
-		event.enqueueWork(KubeJSModEventHandler::loadComplete0);
-	}
-
-	private static void loadComplete0() {
+	public static void loadComplete() {
 		KubeJSPlugins.forEachPlugin(KubeJSPlugin::afterInit);
-		NeoForge.EVENT_BUS.post(new ScriptsLoadedEvent());
+		ScriptsLoadedEvent.EVENT.invoker().run();
 		StartupEvents.POST_INIT.post(ScriptType.STARTUP, KubeStartupEvent.BASIC);
 		UtilsJS.postModificationEvents();
 
@@ -80,7 +66,7 @@ public class KubeJSModEventHandler {
 
 			ConsoleJS.STARTUP.flush(true);
 
-			if (FMLLoader.getDist().isDedicatedServer() || !CommonProperties.get().startupErrorGUI) {
+			if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER || !CommonProperties.get().startupErrorGUI) {
 				throw new RuntimeException("There were KubeJS startup script syntax errors! See logs/kubejs/startup.log for more info");
 			}
 		}
@@ -88,6 +74,8 @@ public class KubeJSModEventHandler {
 		ConsoleJS.STARTUP.stopCapturingErrors();
 		ConsoleJS.CLIENT.stopCapturingErrors();
 
+		// TODO: NEED UPDATE CHECK
+		/*
 		Util.nonCriticalIoPool().submit(() -> {
 			try {
 				var response = HttpClient.newBuilder()
@@ -105,28 +93,32 @@ public class KubeJSModEventHandler {
 			} catch (Exception ignored) {
 			}
 		});
+		 */
 	}
 
-	private record KubeEntityCapabilityProvider<CAP, SRC>(BlockCapability<CAP, SRC> capability, BlockEntityAttachmentInfo attachment) implements ICapabilityProvider<KubeBlockEntity, SRC, CAP> {
+	private record KubeEntityCapabilityProvider<CAP, SRC>(BlockApiLookup<CAP, SRC> capability, BlockEntityAttachmentInfo attachment) implements BlockApiLookup.BlockEntityApiProvider<CAP, SRC> {
+
 		@Override
-		@Nullable
-		public CAP getCapability(KubeBlockEntity entity, SRC from) {
-			if (attachment.directions().isEmpty() || (from instanceof Direction d && attachment.directions().contains(d))) {
-				return entity.attachmentArray[attachment.index()].attachment().getCapability(capability);
+		public @Nullable CAP find(BlockEntity blockEntity, SRC context) {
+			if (attachment.directions().isEmpty() || (context instanceof Direction d && attachment.directions().contains(d))) {
+				if (blockEntity.getLevel() instanceof ServerLevel level) {
+					return capability.find(level, blockEntity.getBlockPos(), context);
+				}
 			}
 
 			return null;
 		}
 	}
 
-	@SubscribeEvent
-	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+	public static void registerCapabilities() {
 		for (var info : RegistryObjectStorage.BLOCK_ENTITY.objects.values().stream()
 			.filter(BlockEntityBuilder.class::isInstance)
 			.map(b -> ((BlockEntityBuilder) b).info).toList()) {
 			for (var attachment : info.attachments.values()) {
 				for (var capability : attachment.factory().getCapabilities()) {
-					event.registerBlockEntity(capability, (BlockEntityType<KubeBlockEntity>) info.entityType, new KubeEntityCapabilityProvider(capability, attachment));
+					if (capability instanceof BlockApiLookup<?,?> lookup) {
+						lookup.registerForBlockEntities(new KubeEntityCapabilityProvider(lookup, attachment), (BlockEntityType<KubeBlockEntity>) info.entityType);
+					}
 				}
 			}
 		}

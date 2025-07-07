@@ -1,15 +1,18 @@
 package dev.latvian.mods.kubejs.stages;
 
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.ICancellableEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import org.jetbrains.annotations.Nullable;
 
-public class StageCreationEvent extends PlayerEvent implements ICancellableEvent {
+public class StageCreationEvent {
+	private final Player player;
 	private Stages stages;
 
 	StageCreationEvent(Player p) {
-		super(p);
+		this.player = p;
+	}
+
+	public Player getPlayer() {
+		return player;
 	}
 
 	public void setPlayerStages(Stages s) {

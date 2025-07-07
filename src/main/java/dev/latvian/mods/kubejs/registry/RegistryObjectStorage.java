@@ -3,6 +3,8 @@ package dev.latvian.mods.kubejs.registry;
 import com.mojang.serialization.Codec;
 import dev.latvian.mods.kubejs.util.Cast;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidType;
+import me.textrue.kubejs.fabric.thirdparty.registries.ThirdPartyRegistries;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -11,8 +13,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
@@ -38,7 +38,7 @@ public final class RegistryObjectStorage<T> implements Iterable<BuilderBase<? ex
 	public static final RegistryObjectStorage<Block> BLOCK = of(Registries.BLOCK);
 	public static final RegistryObjectStorage<Item> ITEM = of(Registries.ITEM);
 	public static final RegistryObjectStorage<BlockEntityType<?>> BLOCK_ENTITY = of(Registries.BLOCK_ENTITY_TYPE);
-	public static final RegistryObjectStorage<FluidType> FLUID_TYPE = of(NeoForgeRegistries.Keys.FLUID_TYPES);
+	public static final RegistryObjectStorage<FluidType> FLUID_TYPE = of(ThirdPartyRegistries.Keys.FLUID_TYPES);
 
 	public final ResourceKey<Registry<T>> key;
 	public final Map<ResourceLocation, BuilderBase<? extends T>> objects;

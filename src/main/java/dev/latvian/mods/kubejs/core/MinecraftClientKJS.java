@@ -11,6 +11,7 @@ import dev.latvian.mods.kubejs.script.ConsoleJS;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,7 +20,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -104,11 +104,11 @@ public interface MinecraftClientKJS extends MinecraftEnvironmentKJS {
 	}
 
 	default boolean kjs$isKeyMappingDown(KeyMapping key) {
-		if (key != null && !key.isUnbound() && key.isConflictContextAndModifierActive()) {
-			if (key.getKey().getType() == InputConstants.Type.KEYSYM) {
-				return kjs$isKeyDown(key.getKey().getValue());
-			} else if (key.getKey().getType() == InputConstants.Type.MOUSE) {
-				return GLFW.glfwGetMouseButton(kjs$self().getWindow().getWindow(), key.getKey().getValue()) == GLFW.GLFW_TRUE;
+		if (key != null && !key.isUnbound() && key.isDown() /*&& key.isConflictContextAndModifierActive()*/) {
+			if (key.getDefaultKey().getType() == InputConstants.Type.KEYSYM) {
+				return kjs$isKeyDown(key.getDefaultKey().getValue());
+			} else if (key.getDefaultKey().getType() == InputConstants.Type.MOUSE) {
+				return GLFW.glfwGetMouseButton(kjs$self().getWindow().getWindow(), key.getDefaultKey().getValue()) == GLFW.GLFW_TRUE;
 			}
 		}
 
@@ -139,7 +139,7 @@ public interface MinecraftClientKJS extends MinecraftEnvironmentKJS {
 			}
 		}
 
-		PacketDistributor.sendToServer(new FirstClickPayload(0));
+		NetworkHelper.sendToServer(new FirstClickPayload(0));
 	}
 
 	@HideFromJS
@@ -157,7 +157,7 @@ public interface MinecraftClientKJS extends MinecraftEnvironmentKJS {
 			}
 		}
 
-		PacketDistributor.sendToServer(new FirstClickPayload(1));
+		NetworkHelper.sendToServer(new FirstClickPayload(1));
 	}
 
 	@HideFromJS

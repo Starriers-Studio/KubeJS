@@ -3,6 +3,7 @@ package dev.latvian.mods.kubejs.core.mixin;
 import dev.latvian.mods.kubejs.core.ReloadableServerResourcesKJS;
 import dev.latvian.mods.kubejs.server.ServerScriptManager;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
+import me.textrue.kubejs.fabric.thirdparty.mixin.MinecraftServerAccessor;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;
@@ -49,8 +50,8 @@ public abstract class ReloadableServerResourcesMixin implements ReloadableServer
 	private static void injectKubeJSPacks(ResourceManager resourceManager, LayeredRegistryAccess<RegistryLayer> registries, FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection, int functionCompilationLevel, Executor backgroundExecutor, Executor gameExecutor, CallbackInfoReturnable<CompletableFuture<ReloadableServerResources>> cir) {
 		RegistryAccessContainer.current = new RegistryAccessContainer(registries.compositeAccess());
 
-		if (gameExecutor instanceof MinecraftServer s && s.getServerResources() != null && s.getServerResources().managers().kjs$getServerScriptManager() != null) {
-			s.getServerResources().managers().kjs$getServerScriptManager().reloadAndCapture();
+		if (gameExecutor instanceof MinecraftServer s && ((MinecraftServerAccessor) s).getServerResources() != null && ((MinecraftServerAccessor) s).getServerResources().managers().kjs$getServerScriptManager() != null) {
+			((MinecraftServerAccessor) s).getServerResources().managers().kjs$getServerScriptManager().reloadAndCapture();
 		}
 	}
 

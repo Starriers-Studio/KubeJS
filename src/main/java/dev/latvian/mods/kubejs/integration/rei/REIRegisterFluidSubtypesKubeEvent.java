@@ -6,10 +6,10 @@ import dev.latvian.mods.kubejs.recipe.viewer.SubtypeInterpreter;
 import dev.latvian.mods.rhino.Context;
 import me.shedaniel.rei.api.common.entry.comparison.EntryComparator;
 import me.shedaniel.rei.api.common.entry.comparison.FluidComparatorRegistry;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 
 import java.util.Arrays;
 import java.util.List;

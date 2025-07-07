@@ -8,21 +8,21 @@ import dev.latvian.mods.kubejs.util.RegExpKJS;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
 import dev.latvian.mods.rhino.type.TypeInfo;
 import dev.latvian.mods.rhino.util.HideFromJS;
+import me.textrue.kubejs.fabric.helper.TagHelper;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidType;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.DataComponentFluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.EmptyFluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.SizedFluidIngredient;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.crafting.DataComponentFluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.EmptyFluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -226,7 +226,7 @@ public interface FluidWrapper {
 		} else if (reader.peek() == '#') {
 			reader.skip();
 			var tag = ResourceLocation.read(reader);
-			return FluidIngredient.tag(FluidTags.create(tag));
+			return FluidIngredient.tag(TagHelper.createFluidTag(tag));
 		} else if (reader.peek() == '@') {
 			reader.skip();
 			var id = reader.readString();

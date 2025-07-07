@@ -4,7 +4,7 @@ import dev.latvian.mods.kubejs.fluid.FluidWrapper;
 import dev.latvian.mods.kubejs.recipe.viewer.AddEntriesKubeEvent;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
 import dev.latvian.mods.rhino.Context;
-import net.neoforged.neoforge.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
 
 import java.util.List;
 

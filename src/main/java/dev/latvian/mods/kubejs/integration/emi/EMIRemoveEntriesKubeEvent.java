@@ -4,8 +4,8 @@ import dev.emi.emi.api.EmiRegistry;
 import dev.latvian.mods.kubejs.recipe.viewer.RecipeViewerEntryType;
 import dev.latvian.mods.kubejs.recipe.viewer.RemoveEntriesKubeEvent;
 import dev.latvian.mods.rhino.Context;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 
 public class EMIRemoveEntriesKubeEvent implements RemoveEntriesKubeEvent {
 	private final RecipeViewerEntryType type;

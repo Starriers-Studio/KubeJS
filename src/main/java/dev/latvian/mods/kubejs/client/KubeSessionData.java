@@ -8,7 +8,6 @@ import dev.latvian.mods.kubejs.text.tooltip.ItemTooltipData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -33,6 +32,6 @@ public class KubeSessionData {
 		recipeViewerData = data.recipeViewerData().orElse(null);
 		itemTooltips = List.copyOf(data.itemTooltipData());
 
-		NeoForge.EVENT_BUS.post(new RemoteRecipeViewerDataUpdatedEvent(recipeViewerData));
+		RemoteRecipeViewerDataUpdatedEvent.EVENT.invoker().dataUpdated(recipeViewerData);
 	}
 }

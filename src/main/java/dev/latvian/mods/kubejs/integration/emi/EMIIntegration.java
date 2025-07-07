@@ -3,8 +3,8 @@ package dev.latvian.mods.kubejs.integration.emi;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.latvian.mods.kubejs.item.ItemPredicate;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 
 import java.util.Arrays;
 import java.util.HashSet;

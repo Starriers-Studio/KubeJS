@@ -1,0 +1,55 @@
+package me.textrue.kubejs.fabric.thirdparty.conditions;
+
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditionType;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+
+public record TagEmptyCondition(TagKey<Item> tag) implements ICondition {
+	public static final MapCodec<TagEmptyCondition> CODEC = RecordCodecBuilder.mapCodec(
+		builder -> builder
+			.group(
+				ResourceLocation.CODEC.xmap(loc -> TagKey.create(Registries.ITEM, loc), TagKey::location).fieldOf("tag").forGetter(TagEmptyCondition::tag))
+			.apply(builder, TagEmptyCondition::new));
+
+	public TagEmptyCondition(String location) {
+		this(ResourceLocation.parse(location));
+	}
+
+	public TagEmptyCondition(String namespace, String path) {
+		this(ResourceLocation.fromNamespaceAndPath(namespace, path));
+	}
+
+	public TagEmptyCondition(ResourceLocation tag) {
+		this(TagKey.create(Registries.ITEM, tag));
+	}
+
+	@Override
+	public boolean test(ICondition.IContext context) {
+		return context.getTag(tag).isEmpty();
+	}
+
+	@Override
+	public MapCodec<? extends ICondition> codec() {
+		return CODEC;
+	}
+
+	@Override
+	public String toString() {
+		return "tag_empty(\"" + tag.location() + "\")";
+	}
+
+	@Override
+	public ResourceConditionType<?> getType() {
+		return ResourceConditionType.create(tag.location(), CODEC);
+	}
+
+	@Override
+	public boolean test(HolderLookup.Provider registryLookup) {
+		return registryLookup.lookup(tag.registry()).isEmpty();
+	}
+}

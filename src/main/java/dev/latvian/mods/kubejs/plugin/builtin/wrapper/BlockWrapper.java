@@ -103,7 +103,7 @@ public class BlockWrapper {
 	public static List<ResourceLocation> getTaggedIds(ResourceLocation tag) {
 		return Util.make(new LinkedList<>(), list -> {
 			for (var holder : BuiltInRegistries.BLOCK.getTagOrEmpty(Tags.block(tag))) {
-				var l = holder.getKey();
+				var l = holder.unwrapKey().orElseThrow();
 
 				if (l != null) {
 					list.add(l.location());

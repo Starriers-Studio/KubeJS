@@ -1,8 +1,8 @@
 package dev.latvian.mods.kubejs.client;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.serialization.DynamicOps;
 import dev.latvian.mods.kubejs.CommonProperties;
-import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.client.highlight.HighlightRenderer;
 import dev.latvian.mods.kubejs.command.KubeJSClientCommands;
 import dev.latvian.mods.kubejs.item.DynamicItemTooltipsKubeEvent;
@@ -17,12 +17,30 @@ import dev.latvian.mods.kubejs.text.tooltip.TooltipRequirements;
 import dev.latvian.mods.kubejs.util.ID;
 import dev.latvian.mods.kubejs.util.StackTraceCollector;
 import dev.latvian.mods.kubejs.util.Tristate;
+import me.textrue.kubejs.fabric.thirdparty.events.CustomizeDebugTextEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.FabricScreenEvents;
+import me.textrue.kubejs.fabric.thirdparty.util.event.CompoundEventResult;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtOps;
@@ -33,22 +51,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.event.TagsUpdatedEvent;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -56,28 +64,46 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
-@EventBusSubscriber(modid = KubeJS.MOD_ID, value = Dist.CLIENT)
 public class KubeJSGameClientEventHandler {
 	public static final Pattern COMPONENT_ERROR = ConsoleJS.methodPattern(KubeJSGameClientEventHandler.class, "onItemTooltip");
 	private static List<String> lastComponentError = List.of();
 
-	@SubscribeEvent
-	public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
-		KubeJSClientCommands.register(event.getDispatcher());
+	public static void init() {
+		ClientCommandRegistrationCallback.EVENT.register(KubeJSGameClientEventHandler::onRegisterClientCommands);
+		debugInfo();
+		ItemTooltipCallback.EVENT.register(KubeJSGameClientEventHandler::onItemTooltip);
+		HudRenderCallback.EVENT.register(KubeJSGameClientEventHandler::hudPostDraw);
+		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+			KubeJSGameClientEventHandler.screenPostDraw(screen);
+			KubeJSGameClientEventHandler.guiPostInit(screen);
+		});
+		ClientTickEvents.START_CLIENT_TICK.register(KubeJSGameClientEventHandler::clientTick);
+		worldRender();
+		FabricScreenEvents.SET_SCREEN.register(KubeJSGameClientEventHandler::openScreenEvent);
+		CommonLifecycleEvents.TAGS_LOADED.register(KubeJSGameClientEventHandler::tagsUpdated);
+		ClientPlayConnectionEvents.JOIN.register(KubeJSGameClientEventHandler::loggingIn);
+		ClientPlayConnectionEvents.DISCONNECT.register(KubeJSGameClientEventHandler::loggingOut);
+	}
+
+	public static void onRegisterClientCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+		KubeJSClientCommands.register(dispatcher);
 		// TODO: custom client commands...?
 	}
 
-	@SubscribeEvent
-	public static void debugInfo(CustomizeGuiOverlayEvent.DebugText event) {
+	public static void debugInfo() {
 		var mc = Minecraft.getInstance();
 
 		if (mc.player != null) {
-			if (ClientEvents.DEBUG_LEFT.hasListeners()) {
-				ClientEvents.DEBUG_LEFT.post(new DebugInfoKubeEvent(mc.player, event.getLeft()));
-			}
-			if (ClientEvents.DEBUG_RIGHT.hasListeners()) {
-				ClientEvents.DEBUG_RIGHT.post(new DebugInfoKubeEvent(mc.player, event.getRight()));
-			}
+			CustomizeDebugTextEvent.LEFT.register(strings -> {
+				if (ClientEvents.DEBUG_LEFT.hasListeners()) {
+					ClientEvents.DEBUG_LEFT.post(new DebugInfoKubeEvent(mc.player, strings));
+				}
+			});
+			CustomizeDebugTextEvent.RIGHT.register(strings -> {
+				if (ClientEvents.DEBUG_RIGHT.hasListeners()) {
+					ClientEvents.DEBUG_RIGHT.post(new DebugInfoKubeEvent(mc.player, strings));
+				}
+			});
 		}
 	}
 
@@ -151,17 +177,13 @@ public class KubeJSGameClientEventHandler {
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void onItemTooltip(ItemTooltipEvent event) {
-		var stack = event.getItemStack();
-
+	public static void onItemTooltip(ItemStack stack, Item.TooltipContext tooltipContext, TooltipFlag tooltipType, List<Component> lines) {
 		if (stack.isEmpty()) {
 			return;
 		}
 
 		var mc = Minecraft.getInstance();
-		var lines = event.getToolTip();
-		var flags = event.getFlags();
+		var flags = tooltipType;
 		var sessionData = KubeSessionData.of(mc);
 
 		var dynamicEvent = new DynamicItemTooltipsKubeEvent(stack, flags, lines, sessionData == null);
@@ -267,20 +289,17 @@ public class KubeJSGameClientEventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void loggingIn(ClientPlayerNetworkEvent.LoggingIn event) {
-		ClientEvents.LOGGED_IN.post(ScriptType.CLIENT, new ClientPlayerKubeEvent(event.getPlayer()));
+	public static void loggingIn(ClientPacketListener handler, PacketSender sender, Minecraft client) {
+		ClientEvents.LOGGED_IN.post(ScriptType.CLIENT, new ClientPlayerKubeEvent(client.player));
 	}
 
-	@SubscribeEvent
-	public static void loggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
-		ClientEvents.LOGGED_OUT.post(ScriptType.CLIENT, new ClientPlayerKubeEvent(event.getPlayer()));
+	public static void loggingOut(ClientPacketListener handler, Minecraft client) {
+		ClientEvents.LOGGED_OUT.post(ScriptType.CLIENT, new ClientPlayerKubeEvent(client.player));
 	}
 
-	@SubscribeEvent
-	public static void hudPostDraw(RenderGuiEvent.Post event) {
+	public static void hudPostDraw(GuiGraphics drawContext, DeltaTracker tickCounter) {
 		var mc = Minecraft.getInstance();
-		HighlightRenderer.INSTANCE.hudPostDraw(mc, event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
+		HighlightRenderer.INSTANCE.hudPostDraw(mc, drawContext, tickCounter.getGameTimeDeltaPartialTick(false));
 
 		/*
 		if (PlatformWrapper.isDevelopmentEnvironment()) {
@@ -307,33 +326,35 @@ public class KubeJSGameClientEventHandler {
 		*/
 	}
 
-	@SubscribeEvent
-	public static void screenPostDraw(ScreenEvent.Render.Post event) {
-		var mc = Minecraft.getInstance();
+	public static void screenPostDraw(Screen screen) {
+		ScreenEvents.afterRender(screen).register((context, drawContext, mouseX, mouseY, tickDelta) -> {
+			var mc = Minecraft.getInstance();
 
-		if (event.getScreen() instanceof AbstractContainerScreen<?> screen) {
-			HighlightRenderer.INSTANCE.screen(mc, event.getGuiGraphics(), screen, event.getMouseX(), event.getMouseY(), event.getPartialTick());
-		}
+			if (screen instanceof AbstractContainerScreen<?> containerScreen) {
+				HighlightRenderer.INSTANCE.screen(mc, drawContext, containerScreen, mouseX, mouseY, tickDelta);
+			}
+		});
 	}
 
-	@SubscribeEvent
-	public static void clientTick(ClientTickEvent.Pre event) {
-		var mc = Minecraft.getInstance();
-		HighlightRenderer.INSTANCE.tickPre(mc);
-		KubeJSKeybinds.triggerKeyEvents(mc);
+	public static void clientTick(Minecraft client) {
+		HighlightRenderer.INSTANCE.tickPre(client);
+		KubeJSKeybinds.triggerKeyEvents(client);
 	}
 
-	@SubscribeEvent
-	public static void worldRender(RenderLevelStageEvent event) {
+	public static void worldRender() {
 		var mc = Minecraft.getInstance();
 
-		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
+		WorldRenderEvents.START.register(context -> {
 			HighlightRenderer.INSTANCE.clearBuffers(mc);
-		} else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
-			HighlightRenderer.INSTANCE.renderAfterEntities(mc, event);
-		} else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
-			HighlightRenderer.INSTANCE.renderAfterLevel(mc, event);
-		}
+		});
+
+		WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+			HighlightRenderer.INSTANCE.renderAfterEntities(mc, context);
+		});
+
+		WorldRenderEvents.LAST.register(context -> {
+			HighlightRenderer.INSTANCE.renderAfterLevel(mc, context);
+		});
 	}
 
 	@Nullable
@@ -349,10 +370,7 @@ public class KubeJSGameClientEventHandler {
 		return screen;
 	}
 
-	@SubscribeEvent
-	public static void guiPostInit(ScreenEvent.Init.Post event) {
-		var screen = event.getScreen();
-
+	public static void guiPostInit(Screen screen) {
 		if (ClientProperties.get().disableRecipeBook && screen instanceof RecipeUpdateListener) {
 			var iterator = screen.children().iterator();
 
@@ -423,18 +441,17 @@ public class KubeJSGameClientEventHandler {
 		ClientEvents.ATLAS_SPRITE_REGISTRY.post(new AtlasSpriteRegistryEventJS(event::addSprite), event.getAtlas().location());
 	}*/
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void openScreenEvent(ScreenEvent.Opening event) {
-		var s = KubeJSGameClientEventHandler.setScreen(event.getScreen());
+	public static CompoundEventResult<Screen> openScreenEvent(Screen screen) {
+		var s = KubeJSGameClientEventHandler.setScreen(screen);
 
-		if (s != null && event.getScreen() != s) {
-			event.setNewScreen(s);
+		if (s != null && screen != s) {
+			return CompoundEventResult.interruptDefault(s);
 		}
+		return CompoundEventResult.pass();
 	}
 
-	@SubscribeEvent
-	public static void tagsUpdated(TagsUpdatedEvent event) {
-		if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED && Minecraft.getInstance().screen instanceof KubeJSErrorScreen screen && screen.scriptType == ScriptType.SERVER) {
+	public static void tagsUpdated(RegistryAccess registries, boolean client) {
+		if (client && Minecraft.getInstance().screen instanceof KubeJSErrorScreen screen && screen.scriptType == ScriptType.SERVER) {
 			Minecraft.getInstance().kjs$runCommand("kubejs errors server");
 		}
 	}

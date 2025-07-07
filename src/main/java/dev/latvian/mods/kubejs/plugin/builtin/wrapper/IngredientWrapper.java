@@ -23,19 +23,19 @@ import dev.latvian.mods.rhino.Wrapper;
 import dev.latvian.mods.rhino.regexp.NativeRegExp;
 import dev.latvian.mods.rhino.type.TypeInfo;
 import dev.latvian.mods.rhino.util.HideFromJS;
+import me.textrue.kubejs.fabric.helper.TagHelper;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.CompoundIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.DataComponentIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.SizedIngredient;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.crafting.CompoundIngredient;
-import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public interface IngredientWrapper {
 		} else if (o instanceof IngredientSupplierKJS ingr) {
 			return ingr.kjs$asIngredient();
 		} else if (o instanceof TagKey<?> tag) {
-			return Ingredient.of(ItemTags.create(tag.location()));
+			return Ingredient.of(TagHelper.createItemTag(tag.location()));
 		} else if (o instanceof Pattern || o instanceof NativeRegExp) {
 			var reg = RegExpKJS.wrap(o);
 
@@ -165,7 +165,7 @@ public interface IngredientWrapper {
 			case '#' -> {
 				reader.skip();
 				// yield new TagIngredient(registries.cachedItemTags, ItemTags.create(ResourceLocation.read(reader))).toVanilla();
-				yield Ingredient.of(ItemTags.create(ResourceLocation.read(reader)));
+				yield Ingredient.of(TagHelper.createItemTag(ResourceLocation.read(reader)));
 			}
 			case '@' -> {
 				reader.skip();
@@ -240,7 +240,7 @@ public interface IngredientWrapper {
 
 	@Nullable
 	static TagKey<Item> tagKeyOf(Ingredient in) {
-		if (!in.isCustom() && in.getValues().length == 1 && in.getValues()[0] instanceof Ingredient.TagValue(TagKey<Item> tag)) {
+		if (!in.kjs$isCustom() && in.kjs$getValues().length == 1 && in.kjs$getValues()[0] instanceof Ingredient.TagValue(TagKey<Item> tag)) {
 			return tag;
 		} else {
 			return null;
@@ -248,11 +248,11 @@ public interface IngredientWrapper {
 	}
 
 	static boolean containsAnyTag(Ingredient in) {
-		if (in.isCustom()) {
+		if (in.kjs$isCustom()) {
 			return false;
 		}
 
-		for (var value : in.getValues()) {
+		for (var value : in.kjs$getValues()) {
 			if (value instanceof Ingredient.TagValue) {
 				return true;
 			}

@@ -2,8 +2,8 @@ package dev.latvian.mods.kubejs.script;
 
 import dev.latvian.mods.kubejs.CommonProperties;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.StringUtilsWrapper;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.loading.FMLLoader;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public class ScriptFile implements Comparable<ScriptFile> {
 			return "Ignored";
 		}
 
-		if (requiredClient && !FMLLoader.getDist().isClient()) {
+		if (requiredClient && !(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)) {
 			return "Client only";
 		}
 
@@ -104,7 +104,7 @@ public class ScriptFile implements Comparable<ScriptFile> {
 
 		if (!requiredMods.isEmpty()) {
 			for (String mod : requiredMods) {
-				if (!ModList.get().isLoaded(mod)) {
+				if (!FabricLoader.getInstance().isModLoaded(mod)) {
 					return "Mod " + mod + " is not loaded";
 				}
 			}

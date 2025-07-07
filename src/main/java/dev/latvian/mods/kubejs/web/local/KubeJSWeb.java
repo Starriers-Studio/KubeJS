@@ -8,7 +8,6 @@ import dev.latvian.apps.tinyserver.http.response.HTTPPayload;
 import dev.latvian.apps.tinyserver.http.response.HTTPResponse;
 import dev.latvian.apps.tinyserver.http.response.HTTPStatus;
 import dev.latvian.apps.tinyserver.http.response.error.client.NotFoundError;
-import dev.latvian.apps.tinyserver.http.response.error.server.InternalError;
 import dev.latvian.apps.tinyserver.ws.Frame;
 import dev.latvian.apps.tinyserver.ws.WSHandler;
 import dev.latvian.mods.kubejs.KubeJS;
@@ -23,17 +22,12 @@ import dev.latvian.mods.kubejs.web.KJSHTTPRequest;
 import dev.latvian.mods.kubejs.web.KJSWSSession;
 import dev.latvian.mods.kubejs.web.LocalWebServer;
 import dev.latvian.mods.kubejs.web.LocalWebServerRegistry;
+import me.textrue.kubejs.fabric.thirdparty.util.ServerLifecycleHooks;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.core.Holder;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.packs.PackLocationInfo;
-import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.tags.TagKey;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.resource.ResourcePackLoader;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -62,7 +56,7 @@ public class KubeJSWeb {
 		"startup_scripts", KubeJSPaths.STARTUP_SCRIPTS,
 		"client_scripts", KubeJSPaths.CLIENT_SCRIPTS,
 		"server_scripts", KubeJSPaths.SERVER_SCRIPTS,
-		"logs", FMLPaths.GAMEDIR.get().resolve("logs")
+		"logs", FabricLoader.getInstance().getGameDir().resolve("logs")
 	);
 
 	public static int broadcastEvent(@Nullable WSHandler<?, ?> handler, String event, String requiredTag, @Nullable Supplier<JsonElement> payload) {
@@ -171,8 +165,8 @@ public class KubeJSWeb {
 		list.add("");
 		list.add("Loaded Mods:");
 
-		for (var mod : ModList.get().getSortedMods()) {
-			list.add("- " + mod.getModInfo().getDisplayName() + " (" + mod.getModId() + " - " + mod.getModInfo().getVersion() + ")");
+		for (var mod : FabricLoader.getInstance().getAllMods()) {
+			list.add("- " + mod.getMetadata().getName() + " (" + mod.getMetadata().getId() + " - " + mod.getMetadata().getVersion() + ")");
 		}
 
 		list.add("");
@@ -196,24 +190,24 @@ public class KubeJSWeb {
 
 	private static HTTPResponse getMods(KJSHTTPRequest req) {
 		return HTTPResponse.ok().content(JsonContent.array(json -> {
-			for (var mod : ModList.get().getSortedMods()) {
+			for (var mod : FabricLoader.getInstance().getAllMods()) {
 				var o = new JsonObject();
-				o.addProperty("id", mod.getModId());
-				o.addProperty("name", mod.getModInfo().getDisplayName());
-				o.addProperty("version", mod.getModInfo().getVersion().toString());
+				o.addProperty("id", mod.getMetadata().getId());
+				o.addProperty("name", mod.getMetadata().getName());
+				o.addProperty("version", mod.getMetadata().getVersion().getFriendlyString());
 				json.add(o);
 			}
 		}));
 	}
 
 	private static HTTPResponse getModIcon(KJSHTTPRequest req) throws Exception {
-		var mod = ModList.get().getModContainerById(req.variable("id").asString()).map(ModContainer::getModInfo).orElse(null);
+		var mod = FabricLoader.getInstance().getModContainer(req.variable("id").asString()).map(ModContainer::getMetadata).orElse(null);
 
 		if (mod == null) {
 			throw new NotFoundError("Mod not found");
 		}
 
-		var logo = mod.getLogoFile().orElse("");
+		var logo = mod.getIconPath(128).orElse("");
 		var img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
 
 		for (int i = 0; i < 128; i++) {
@@ -223,30 +217,53 @@ public class KubeJSWeb {
 		}
 
 		if (!logo.isEmpty()) {
-			var resourcePack = ResourcePackLoader.getPackFor(mod.getModId()).orElse(ResourcePackLoader.getPackFor("neoforge").orElseThrow(() -> new InternalError("Can't find neoforge, WHAT!")));
+			// TODO: NEED TO FIX THIS
+//			var resourcePack = ResourcePackLoader.getPackFor(mod.getModId()).orElse(ResourcePackLoader.getPackFor("neoforge").orElseThrow(() -> new InternalError("Can't find neoforge, WHAT!")));
+//
+//			try (var res = resourcePack.openPrimary(new PackLocationInfo("mod/" + mod.getModId(), Component.empty(), PackSource.BUILT_IN, Optional.empty()))) {
+//				var logoResource = res.getRootResource(logo.split("[/\\\\]"));
+//
+//				if (logoResource != null) {
+//					var l = ImageIO.read(logoResource.get());
+//					var g = img.createGraphics();
+//					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+//
+//					float r = l.getWidth() / (float) l.getHeight();
+//					int w, h;
+//
+//					if (r > 1F) {
+//						w = 128;
+//						h = (int) (128 / r);
+//					} else {
+//						w = (int) (128 * r);
+//						h = 128;
+//					}
+//
+//					g.drawImage(l, (128 - w) / 2, (128 - h) / 2, w, h, null);
+//					g.dispose();
+//				}
+//			}
 
-			try (var res = resourcePack.openPrimary(new PackLocationInfo("mod/" + mod.getModId(), Component.empty(), PackSource.BUILT_IN, Optional.empty()))) {
-				var logoResource = res.getRootResource(logo.split("[/\\\\]"));
+			var logoResource = mod.getIconPath(128).orElse("assets/" + mod.getId() + "/icon.png");
 
-				if (logoResource != null) {
-					var l = ImageIO.read(logoResource.get());
-					var g = img.createGraphics();
-					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, mod.getLogoBlur() ? RenderingHints.VALUE_INTERPOLATION_BILINEAR : RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			if (logoResource != null) {
+				var bufferedImage = ImageIO.read(Path.of(logoResource).toFile());
+				var imgGraphics = img.createGraphics();
+				imgGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-					float r = l.getWidth() / (float) l.getHeight();
-					int w, h;
+				float r = bufferedImage.getWidth() / (float) bufferedImage.getHeight();
+				int w, h;
 
-					if (r > 1F) {
-						w = 128;
-						h = (int) (128 / r);
-					} else {
-						w = (int) (128 * r);
-						h = 128;
-					}
-
-					g.drawImage(l, (128 - w) / 2, (128 - h) / 2, w, h, null);
-					g.dispose();
+				if (r > 1F) {
+					w = 128;
+					h = (int) (128 / r);
+				} else {
+					w = (int) (128 * r);
+					h = 128;
 				}
+
+				imgGraphics.drawImage(bufferedImage, (128 - w) / 2, (128 - h) / 2, w, h, null);
+				imgGraphics.dispose();
 			}
 		}
 

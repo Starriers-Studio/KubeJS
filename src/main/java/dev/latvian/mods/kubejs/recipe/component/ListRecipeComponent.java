@@ -10,8 +10,8 @@ import dev.latvian.mods.kubejs.recipe.KubeRecipe;
 import dev.latvian.mods.kubejs.recipe.match.ReplacementMatchInfo;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.type.TypeInfo;
-import net.neoforged.neoforge.common.conditions.ConditionalOps;
-import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
+import me.textrue.kubejs.fabric.thirdparty.conditions.ConditionalOps;
+import me.textrue.kubejs.fabric.thirdparty.util.ThirdPartyExtraCodecs;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public record ListRecipeComponent<T>(RecipeComponent<T> component, boolean canWr
 	static <L> ListRecipeComponent<L> create(RecipeComponent<L> component, boolean canWriteSelf, boolean conditional, boolean allowEmptyList) {
 		var typeInfo = component.typeInfo();
 		var codec = component.codec();
-		var listCodec = conditional ? NeoForgeExtraCodecs.listWithOptionalElements(ConditionalOps.createConditionalCodec(codec)) : codec.listOf();
+		var listCodec = conditional ? ThirdPartyExtraCodecs.listWithOptionalElements(ConditionalOps.createConditionalCodec(codec)) : codec.listOf();
 
 		if (canWriteSelf) {
 			return new ListRecipeComponent<>(component, true, TypeInfo.RAW_LIST.withParams(typeInfo).or(typeInfo), KubeJSCodecs.listOfOrSelf(listCodec, codec), conditional, allowEmptyList);

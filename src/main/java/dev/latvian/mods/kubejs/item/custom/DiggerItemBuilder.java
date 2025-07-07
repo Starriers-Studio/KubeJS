@@ -1,5 +1,6 @@
 package dev.latvian.mods.kubejs.item.custom;
 
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.AxeItem;
@@ -9,7 +10,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.Tier;
-import net.neoforged.neoforge.common.Tags;
 
 import java.util.function.BiFunction;
 
@@ -31,7 +31,7 @@ public class DiggerItemBuilder extends HandheldItemBuilder {
 		public static final ResourceLocation[] PICKAXE_TAGS = {
 			ItemTags.PICKAXES.location(),
 			ItemTags.CLUSTER_MAX_HARVESTABLES.location(),
-			Tags.Items.MINING_TOOL_TOOLS.location(),
+			ConventionalItemTags.MINING_TOOL_TOOLS.location(),
 		};
 
 		public static final ResourceLocation PICKAXE_MODEL = ResourceLocation.withDefaultNamespace("item/iron_pickaxe");

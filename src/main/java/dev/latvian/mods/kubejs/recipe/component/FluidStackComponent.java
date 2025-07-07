@@ -8,10 +8,10 @@ import dev.latvian.mods.kubejs.recipe.match.FluidMatch;
 import dev.latvian.mods.kubejs.recipe.match.ReplacementMatchInfo;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.type.TypeInfo;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.SizedFluidIngredient;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 public record FluidStackComponent(RecipeComponentType<?> type, Codec<FluidStack> codec) implements RecipeComponent<FluidStack> {
 	public static final RecipeComponentType<FluidStack> FLUID_STACK = RecipeComponentType.unit(KubeJS.id("fluid_stack"), type -> new FluidStackComponent(type, FluidStack.OPTIONAL_CODEC));

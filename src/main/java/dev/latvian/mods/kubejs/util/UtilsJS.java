@@ -37,6 +37,11 @@ public class UtilsJS {
 	public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 	public static final Predicate<Object> ALWAYS_TRUE = o -> true;
 
+	@SuppressWarnings("unchecked")
+	public static <T> T cast(Object o) {
+		return (T) o;
+	}
+
 	// TODO: Remove this garbage
 	@Nullable
 	public static Object wrap(@Nullable Object o, JSObjectType type) {

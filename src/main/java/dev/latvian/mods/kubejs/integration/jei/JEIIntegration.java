@@ -3,10 +3,10 @@ package dev.latvian.mods.kubejs.integration.jei;
 import dev.latvian.mods.kubejs.item.ItemPredicate;
 import dev.latvian.mods.kubejs.recipe.viewer.RecipeViewerEntryType;
 import dev.latvian.mods.rhino.Context;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.fabric.constants.FabricTypes;
 import mezz.jei.api.ingredients.IIngredientType;
-import mezz.jei.api.neoforge.NeoForgeTypes;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import org.jetbrains.annotations.Nullable;
 
 public class JEIIntegration {
@@ -15,7 +15,7 @@ public class JEIIntegration {
 		if (type == RecipeViewerEntryType.ITEM) {
 			return VanillaTypes.ITEM_STACK;
 		} else if (type == RecipeViewerEntryType.FLUID) {
-			return NeoForgeTypes.FLUID_STACK;
+			return FabricTypes.FLUID_STACK;
 		} else {
 			return null;
 		}

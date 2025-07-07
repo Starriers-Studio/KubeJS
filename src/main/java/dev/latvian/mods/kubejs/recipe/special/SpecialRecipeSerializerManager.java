@@ -2,17 +2,24 @@ package dev.latvian.mods.kubejs.recipe.special;
 
 import dev.latvian.mods.kubejs.event.EventResult;
 import dev.latvian.mods.kubejs.event.KubeEvent;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Recipe;
-import net.neoforged.bus.api.Event;
-import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class SpecialRecipeSerializerManager implements KubeEvent {
-	public static final class AfterPost extends Event {
+	Event<Consumer<AfterPost>> AFTER_POST = EventFactory.createArrayBacked(Consumer.class, (callbacks) -> event -> {
+		for (var callback : callbacks) {
+			callback.accept(event);
+		}
+	});
+
+	public static final class AfterPost {
 	}
 
 	public static final SpecialRecipeSerializerManager INSTANCE = new SpecialRecipeSerializerManager();
@@ -26,7 +33,7 @@ public class SpecialRecipeSerializerManager implements KubeEvent {
 
 	@Override
 	public void afterPosted(EventResult result) {
-		NeoForge.EVENT_BUS.post(new AfterPost());
+		AFTER_POST.invoker().accept(new AfterPost());
 	}
 
 	public boolean isSpecial(Recipe<?> recipe) {

@@ -12,13 +12,20 @@ import dev.latvian.mods.rhino.BaseFunction;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.regexp.NativeRegExp;
 import dev.latvian.mods.rhino.type.TypeInfo;
-import net.neoforged.neoforge.common.NeoForge;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
 
 @FunctionalInterface
 public interface RecipeFilter {
+	Event<RecipeFilterParseEvent> PARSE = EventFactory.createArrayBacked(RecipeFilterParseEvent.class, listeners -> (cx, filters, map) -> {
+		for (var listener : listeners) {
+			listener.parse(cx, filters, map);
+		}
+	});
+
 	boolean test(Context cx, RecipeLikeKJS r);
 
 	static RecipeFilter wrap(Context cx, @Nullable Object o) {
@@ -127,7 +134,7 @@ public interface RecipeFilter {
 				}
 			}
 
-			NeoForge.EVENT_BUS.post(new RecipeFilterParseEvent(cx, predicate.list, map));
+			PARSE.invoker().parse(cx, predicate.list, map);
 
 			if (predicate.list.isEmpty() && !map.isEmpty()) {
 				throw Context.reportRuntimeError("Unable to parse recipe filter " + map, cx);

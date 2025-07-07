@@ -7,7 +7,7 @@ import dev.latvian.mods.kubejs.plugin.KubeJSPlugins;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.NativeEventWrapper;
 import dev.latvian.mods.kubejs.util.Lazy;
 import dev.latvian.mods.rhino.util.HideFromJS;
-import net.neoforged.fml.loading.FMLPaths;
+import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public enum ScriptType implements ScriptTypePredicate, ScriptTypeHolder {
 	}
 
 	public Path getLogFile() {
-		var dir = FMLPaths.GAMEDIR.get().resolve("logs/kubejs");
+		var dir = FabricLoader.getInstance().getGameDir().resolve("logs/kubejs");
 		var file = dir.resolve(name + ".log");
 
 		try {

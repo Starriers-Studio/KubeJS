@@ -4,9 +4,9 @@ import dev.latvian.mods.kubejs.plugin.builtin.wrapper.IngredientWrapper;
 import dev.latvian.mods.kubejs.recipe.match.ItemMatch;
 import dev.latvian.mods.kubejs.recipe.match.Replaceable;
 import dev.latvian.mods.rhino.Context;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.SizedIngredient;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 public interface SizedIngredientKJS extends Replaceable, IngredientSupplierKJS, ItemMatch {
 	default SizedIngredient kjs$self() {

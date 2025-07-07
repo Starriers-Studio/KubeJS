@@ -23,13 +23,14 @@ import dev.latvian.mods.rhino.Wrapper;
 import dev.latvian.mods.rhino.regexp.NativeRegExp;
 import dev.latvian.mods.rhino.type.TypeInfo;
 import dev.latvian.mods.rhino.util.HideFromJS;
+import me.textrue.kubejs.fabric.helper.TagHelper;
+import me.textrue.kubejs.fabric.thirdparty.items.ItemAbility;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
@@ -40,7 +41,6 @@ import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.ItemAbility;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
@@ -186,7 +186,7 @@ public interface ItemWrapper {
 				return stack;
 			} else if (map.containsKey("tag")) {
 				// var stack = new TagIngredient(registries.cachedItemTags, ItemTags.create(ID.mc(map.get("tag")))).toVanilla().kjs$getFirst();
-				var stack = Ingredient.of(ItemTags.create(ID.mc(map.get("tag")))).kjs$getFirst();
+				var stack = Ingredient.of(TagHelper.createItemTag(ID.mc(map.get("tag")))).kjs$getFirst();
 
 				if (map.containsKey("count")) {
 					stack.setCount(StringUtilsWrapper.parseInt(map.get("count"), 1));

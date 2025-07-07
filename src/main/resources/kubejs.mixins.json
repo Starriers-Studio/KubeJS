@@ -31,7 +31,6 @@
 		"FluidStackMixin",
 		"GameRulesMixin",
 		"HolderMixin",
-		"IBlockStateExtensionMixin",
 		"IItemHandlerMixin",
 		"IngredientMixin",
 		"ItemEntityMixin",

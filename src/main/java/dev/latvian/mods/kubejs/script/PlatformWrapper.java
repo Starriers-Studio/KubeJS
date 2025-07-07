@@ -4,9 +4,8 @@ import dev.latvian.mods.kubejs.CommonProperties;
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugins;
 import dev.latvian.mods.rhino.Context;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.neoforge.data.loading.DatagenModLoader;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -41,12 +40,13 @@ public class PlatformWrapper {
 			customName = n;
 
 			try {
-				var mc = ModList.get().getModContainerById(id);
+				var mc = FabricLoader.getInstance().getModContainer(id);
 
-				if (mc.isPresent() && mc.get().getModInfo() instanceof net.neoforged.fml.loading.moddiscovery.ModInfo i) {
-					var field = net.neoforged.fml.loading.moddiscovery.ModInfo.class.getDeclaredField("displayName");
+				if (mc.isPresent()) {
+					var meta = mc.get().getMetadata();
+					var field = meta.getClass().getDeclaredField("name");
 					field.setAccessible(true);
-					field.set(i, name);
+					field.set(meta, name);
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -62,6 +62,7 @@ public class PlatformWrapper {
 		}
 	}
 
+	private static Boolean dataGen;
 	private static Map<String, ModInfo> allMods;
 
 	@Deprecated
@@ -106,10 +107,10 @@ public class PlatformWrapper {
 		if (allMods == null) {
 			allMods = new LinkedHashMap<>();
 
-			for (var mod : ModList.get().getMods()) {
-				var info = new ModInfo(mod.getModId());
-				info.name = mod.getDisplayName();
-				info.version = mod.getVersion().toString();
+			for (var mod : FabricLoader.getInstance().getAllMods()) {
+				var info = new ModInfo(mod.getMetadata().getId());
+				info.name = mod.getMetadata().getName();
+				info.version = mod.getMetadata().getVersion().getFriendlyString();
 				allMods.put(info.id, info);
 			}
 		}
@@ -118,11 +119,11 @@ public class PlatformWrapper {
 	}
 
 	public static boolean isDevelopmentEnvironment() {
-		return !FMLLoader.isProduction();
+		return FabricLoader.getInstance().isDevelopmentEnvironment();
 	}
 
 	public static boolean isClientEnvironment() {
-		return FMLLoader.getDist().isClient();
+		return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
 	}
 
 	public static void setModName(String modId, String name) {
@@ -138,7 +139,12 @@ public class PlatformWrapper {
 	}
 
 	public static boolean isGeneratingData() {
-		return DatagenModLoader.isRunningDataGen();
+		if (dataGen == null) {
+			// FabricDataGenHelper.ENABLED
+			dataGen = System.getProperty("fabric-api.datagen") != null;
+		}
+
+		return dataGen;
 	}
 
 	public static void breakpoint(Context cx, Object... args) {

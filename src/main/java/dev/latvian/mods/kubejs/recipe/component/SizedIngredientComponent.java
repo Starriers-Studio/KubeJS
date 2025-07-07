@@ -9,7 +9,7 @@ import dev.latvian.mods.kubejs.recipe.match.ItemMatch;
 import dev.latvian.mods.kubejs.recipe.match.ReplacementMatchInfo;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.type.TypeInfo;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.SizedIngredient;
 
 public record SizedIngredientComponent(RecipeComponentType<?> type, Codec<SizedIngredient> codec) implements RecipeComponent<SizedIngredient> {
 	public static final RecipeComponentType<SizedIngredient> FLAT = RecipeComponentType.unit(KubeJS.id("flat_sized_ingredient"), type -> new SizedIngredientComponent(type, SizedIngredient.FLAT_CODEC));

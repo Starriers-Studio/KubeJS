@@ -276,7 +276,7 @@ public class KubeJSClientWeb {
 			for (var fluid : BuiltInRegistries.FLUID) {
 				var o = new JsonObject();
 				o.addProperty("id", fluid.kjs$getId());
-				o.addProperty("name", fluid.getFluidType().getDescription().getString());
+				o.addProperty("name", fluid.kjs$getFluid().getDescription().getString());
 
 				if (includeTags) {
 					var tags = new JsonArray();

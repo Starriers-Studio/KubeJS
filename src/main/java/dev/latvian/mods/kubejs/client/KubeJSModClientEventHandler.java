@@ -1,6 +1,5 @@
 package dev.latvian.mods.kubejs.client;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.block.BlockBuilder;
@@ -23,29 +22,22 @@ import dev.latvian.mods.kubejs.text.tooltip.ItemTooltipData;
 import dev.latvian.mods.kubejs.util.ID;
 import dev.latvian.mods.kubejs.web.LocalWebServer;
 import dev.latvian.mods.kubejs.web.WebServerProperties;
-import net.minecraft.client.KeyMapping;
+import me.textrue.kubejs.fabric.helper.key.KeyMappingBuilder;
+import me.textrue.kubejs.fabric.thirdparty.events.AddPackFindersEvent;
+import me.textrue.kubejs.fabric.thirdparty.fluids.BaseFlowingFluid;
+import me.textrue.kubejs.fabric.thirdparty.fluids.extensions.ClientFluidTypeExtensions;
+import me.textrue.kubejs.fabric.thirdparty.settings.KeyConflictContext;
+import me.textrue.kubejs.fabric.thirdparty.settings.KeyModifier;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyModifier;
-import net.neoforged.neoforge.event.AddPackFindersEvent;
+import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -53,15 +45,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@EventBusSubscriber(modid = KubeJS.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class KubeJSModClientEventHandler {
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void setupClient(FMLClientSetupEvent event) {
-		KubeJS.PROXY = new KubeJSClient();
-		event.enqueueWork(KubeJSModClientEventHandler::setupClient0);
+
+	public static void init() {
+		AddPackFindersEvent.EVENT.register(KubeJSModClientEventHandler::addClientPacks);
+		blockColors();
+		itemColors();
+		registerMenuScreens();
+		registerRenderers();
+		registerKeyMappings();
+		CoreShaderRegistrationCallback.EVENT.register(KubeJSModClientEventHandler::registerCoreShaders);
+		registerParticleProviders();
 	}
 
-	@SubscribeEvent
+	public static void setupClient() {
+		KubeJS.PROXY = new KubeJSClient();
+		setupClient0();
+	}
+
 	public static void addClientPacks(AddPackFindersEvent event) {
 		if (event.getPackType() == PackType.CLIENT_RESOURCES) {
 			event.addRepositorySource(new KubeJSResourcePackFinder());
@@ -79,9 +80,9 @@ public class KubeJSModClientEventHandler {
 			if (builder instanceof BlockBuilder b) {
 				switch (b instanceof FluidBlockBuilder fb ? fb.fluidBuilder.fluidType.renderType : b.renderType) {
 					// TODO: Move these to model json
-					case CUTOUT -> ItemBlockRenderTypes.setRenderLayer(b.get(), RenderType.cutout());
-					case CUTOUT_MIPPED -> ItemBlockRenderTypes.setRenderLayer(b.get(), RenderType.cutoutMipped());
-					case TRANSLUCENT -> ItemBlockRenderTypes.setRenderLayer(b.get(), RenderType.translucent());
+					case CUTOUT -> BlockRenderLayerMap.INSTANCE.putBlock(b.get(), RenderType.cutout());
+					case CUTOUT_MIPPED -> BlockRenderLayerMap.INSTANCE.putBlock(b.get(), RenderType.cutoutMipped());
+					case TRANSLUCENT -> BlockRenderLayerMap.INSTANCE.putBlock(b.get(), RenderType.translucent());
 				}
 			}
 		}
@@ -90,16 +91,16 @@ public class KubeJSModClientEventHandler {
 			if (builder instanceof FluidBuilder b) {
 				switch (b.fluidType.renderType) {
 					case CUTOUT -> {
-						ItemBlockRenderTypes.setRenderLayer(b.get().getSource(), RenderType.cutout());
-						ItemBlockRenderTypes.setRenderLayer(b.get().getFlowing(), RenderType.cutout());
+						BlockRenderLayerMap.INSTANCE.putFluid(b.get().getSource(), RenderType.cutout());
+						BlockRenderLayerMap.INSTANCE.putFluid(b.get().getFlowing(), RenderType.cutout());
 					}
 					case CUTOUT_MIPPED -> {
-						ItemBlockRenderTypes.setRenderLayer(b.get().getSource(), RenderType.cutoutMipped());
-						ItemBlockRenderTypes.setRenderLayer(b.get().getFlowing(), RenderType.cutoutMipped());
+						BlockRenderLayerMap.INSTANCE.putFluid(b.get().getSource(), RenderType.cutoutMipped());
+						BlockRenderLayerMap.INSTANCE.putFluid(b.get().getFlowing(), RenderType.cutoutMipped());
 					}
 					case TRANSLUCENT -> {
-						ItemBlockRenderTypes.setRenderLayer(b.get().getSource(), RenderType.translucent());
-						ItemBlockRenderTypes.setRenderLayer(b.get().getFlowing(), RenderType.translucent());
+						BlockRenderLayerMap.INSTANCE.putFluid(b.get().getSource(), RenderType.translucent());
+						BlockRenderLayerMap.INSTANCE.putFluid(b.get().getFlowing(), RenderType.translucent());
 					}
 				}
 			}
@@ -110,89 +111,84 @@ public class KubeJSModClientEventHandler {
 		KubeJSClient.clientItemTooltips = List.copyOf(list);
 	}
 
-	@SubscribeEvent
-	public static void blockColors(RegisterColorHandlersEvent.Block event) {
+	public static void blockColors() {
 		for (var builder : RegistryObjectStorage.BLOCK) {
 			if (builder instanceof BlockBuilder b && b.tint != null) {
-				event.register(new BlockTintFunctionWrapper(b.tint), b.get());
+				ColorProviderRegistry.BLOCK.register(new BlockTintFunctionWrapper(b.tint), b.get());
 			}
 		}
 	}
 
-	@SubscribeEvent
-	public static void itemColors(RegisterColorHandlersEvent.Item event) {
+	public static void itemColors() {
 		for (var builder : RegistryObjectStorage.ITEM) {
 			if (builder instanceof ItemBuilder b && b.tint != null) {
-				event.register(new ItemTintFunctionWrapper(b.tint), b.get());
+				ColorProviderRegistry.ITEM.register(new ItemTintFunctionWrapper(b.tint), b.get());
 			}
 		}
 	}
 
-	@SubscribeEvent
-	public static void registerMenuScreens(RegisterMenuScreensEvent event) {
-		event.register(KubeJSMenus.MENU.get(), KubeJSScreen::new);
-		ClientEvents.MENU_SCREEN_REGISTRY.post(ScriptType.STARTUP, new MenuScreenRegistryKubeEvent(event));
+	public static void registerMenuScreens() {
+		MenuScreens.register(KubeJSMenus.MENU.get(), KubeJSScreen::new);
+		ClientEvents.MENU_SCREEN_REGISTRY.post(ScriptType.STARTUP, new MenuScreenRegistryKubeEvent());
 	}
 
-	@SubscribeEvent
-	public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-		ClientEvents.ENTITY_RENDERER_REGISTRY.post(ScriptType.STARTUP, new EntityRendererRegistryKubeEvent(event));
-		ClientEvents.BLOCK_ENTITY_RENDERER_REGISTRY.post(ScriptType.STARTUP, new BlockEntityRendererRegistryKubeEvent(event));
+
+	public static void registerRenderers() {
+		ClientEvents.ENTITY_RENDERER_REGISTRY.post(ScriptType.STARTUP, new EntityRendererRegistryKubeEvent());
+		ClientEvents.BLOCK_ENTITY_RENDERER_REGISTRY.post(ScriptType.STARTUP, new BlockEntityRendererRegistryKubeEvent());
 	}
 
-	@SubscribeEvent
-	public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-		event.register(HighlightRenderer.keyMapping = new KeyMapping("key.kubejs.kubedex", KeyConflictContext.UNIVERSAL, KeyModifier.NONE, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "key.categories.kubejs"));
+	public static void registerKeyMappings() {
+		KeyBindingHelper.registerKeyBinding(HighlightRenderer.keyMapping = KeyMappingBuilder.create("key.categories.kubejs", "key.kubejs.kubedex").setContext(KeyConflictContext.UNIVERSAL).setModifier(KeyModifier.NONE).buildKeyboardKey(GLFW.GLFW_KEY_K).getMapping());
 
 		var kubeEvent = new KeybindRegistryKubeEvent();
 		KeyBindEvents.REGISTRY.post(kubeEvent);
 
 		for (var bind : kubeEvent.build()) {
-			event.register(bind.mapping);
+			KeyBindingHelper.registerKeyBinding(bind.mapping);
 		}
 
 		KubeJSKeybinds.triggerReload();
 	}
 
-	@SubscribeEvent
-	public static void registerCoreShaders(RegisterShadersEvent event) throws IOException {
-		event.registerShader(new ShaderInstance(event.getResourceProvider(), ID.mc("kubejs/rendertype_highlight"), DefaultVertexFormat.POSITION_COLOR), s -> HighlightRenderer.INSTANCE.highlightShader = s);
+	public static void registerCoreShaders(CoreShaderRegistrationCallback.RegistrationContext context) throws IOException {
+		context.register(ID.mc("kubejs/rendertype_highlight"), DefaultVertexFormat.POSITION_COLOR, shaderInstance -> HighlightRenderer.INSTANCE.highlightShader = shaderInstance);
 	}
 
-	@SubscribeEvent
-	public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+	public static void registerClientExtensions(Fluid fluid) {
 		for (var builder : RegistryObjectStorage.FLUID_TYPE) {
 			if (builder instanceof FluidTypeBuilder b) {
-				event.registerFluidType(new IClientFluidTypeExtensions() {
-					@Override
-					public ResourceLocation getStillTexture() {
-						return b.actualStillTexture;
-					}
+				if (fluid instanceof BaseFlowingFluid flowingFluid) {
+					flowingFluid.setFluidTypeExtensions(new ClientFluidTypeExtensions() {
+						@Override
+						public ResourceLocation getStillTexture() {
+							return b.actualStillTexture;
+						}
 
-					@Override
-					public ResourceLocation getFlowingTexture() {
-						return b.actualFlowingTexture;
-					}
+						@Override
+						public ResourceLocation getFlowingTexture() {
+							return b.actualFlowingTexture;
+						}
 
-					@Override
-					public ResourceLocation getOverlayTexture() {
-						return b.blockOverlayTexture;
-					}
+						@Override
+						public ResourceLocation getOverlayTexture() {
+							return b.blockOverlayTexture;
+						}
 
-					@Override
-					@Nullable
-					public ResourceLocation getRenderOverlayTexture(Minecraft mc) {
-						return b.screenOverlayTexture;
-					}
-				}, b.get());
+						@Override
+						@Nullable
+						public ResourceLocation getRenderOverlayTexture(Minecraft mc) {
+							return b.screenOverlayTexture;
+						}
+					});
+				}
 			}
 		}
 	}
 
-	@SubscribeEvent
-	public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
+	public static void registerParticleProviders() {
 		if (ClientEvents.PARTICLE_PROVIDER_REGISTRY.hasListeners()) {
-			ClientEvents.PARTICLE_PROVIDER_REGISTRY.post(new ParticleProviderRegistryKubeEvent(event));
+			ClientEvents.PARTICLE_PROVIDER_REGISTRY.post(new ParticleProviderRegistryKubeEvent());
 		}
 	}
 }

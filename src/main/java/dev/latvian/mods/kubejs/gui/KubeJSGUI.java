@@ -3,11 +3,26 @@ package dev.latvian.mods.kubejs.gui;
 import dev.latvian.mods.kubejs.core.InventoryKJS;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.TextIcons;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.SimpleContainer;
+import org.jetbrains.annotations.NotNull;
 
 public class KubeJSGUI {
 	public static final SimpleContainer EMPTY_CONTAINER = new SimpleContainer(0);
+
+	public static final StreamCodec<RegistryFriendlyByteBuf, KubeJSGUI> STREAM_CODEC = new StreamCodec<>() {
+		@Override
+		public @NotNull KubeJSGUI decode(@NotNull RegistryFriendlyByteBuf buf) {
+			return new KubeJSGUI(buf);
+		}
+
+		@Override
+		public void encode(@NotNull RegistryFriendlyByteBuf buf, KubeJSGUI data) {
+			data.write(buf);
+		}
+	};
 
 	public int width = 176;
 	public int height = 166;

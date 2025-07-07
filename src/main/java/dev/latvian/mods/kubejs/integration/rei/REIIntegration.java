@@ -1,6 +1,5 @@
 package dev.latvian.mods.kubejs.integration.rei;
 
-import dev.architectury.hooks.fluid.forge.FluidStackHooksForge;
 import dev.latvian.mods.kubejs.item.ItemPredicate;
 import dev.latvian.mods.kubejs.recipe.viewer.RecipeViewerEntryType;
 import dev.latvian.mods.kubejs.script.KubeJSContext;
@@ -11,10 +10,11 @@ import me.shedaniel.rei.api.common.entry.type.EntryType;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import me.shedaniel.rei.api.common.util.EntryIngredients;
 import me.shedaniel.rei.api.common.util.EntryStacks;
+import me.textrue.kubejs.fabric.helper.FluidStackHelper;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -39,7 +39,7 @@ public class REIIntegration {
 			return EntryStacks.of(in);
 		} else if (type == RecipeViewerEntryType.FLUID) {
 			var in = (FluidStack) type.wrapEntry(cx, from);
-			return EntryStacks.of(FluidStackHooksForge.fromForge(in));
+			return EntryStacks.of(FluidStackHelper.thirdPartyToArch(in));
 		} else {
 			((KubeJSContext) cx).getConsole().error("Currently custom type '" + type.id + "' isn't supported");
 			return EntryStack.empty();
@@ -47,7 +47,7 @@ public class REIIntegration {
 	}
 
 	public static EntryIngredient fluidIngredient(FluidIngredient ingredient) {
-		return EntryIngredient.of(Arrays.stream(ingredient.getStacks()).map(FluidStackHooksForge::fromForge).map(EntryStacks::of).toList());
+		return EntryIngredient.of(Arrays.stream(ingredient.getStacks()).map(FluidStackHelper::thirdPartyToArch).map(EntryStacks::of).toList());
 	}
 
 	public static EntryIngredient ingredientOf(Context cx, RecipeViewerEntryType type, Object from) {

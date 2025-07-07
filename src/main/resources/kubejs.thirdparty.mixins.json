@@ -1,0 +1,42 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "me.textrue.kubejs.fabric.thirdparty.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"AttributeMixin",
+		"BaseSpawnerMixin",
+		"CommandsMixin",
+		"CustomIngredientMixin",
+		"DedicatedServerMixin",
+		"EntityMixin",
+		"FlowingFluidAccessor",
+		"FluidMixin",
+		"FluidStateMixin",
+		"FurnaceResultSlotMixin",
+		"IngredientMixin",
+		"ItemEntityMixin",
+		"KeyMappingAccessor",
+		"KeyMappingMixin",
+		"LivingDeathInvoker",
+		"LivingEntityMixin",
+		"MinecraftMixin",
+		"MinecraftServerAccessor",
+		"PackRepositoryMixin",
+		"PlayerAdvancementsMixin",
+		"PlayerListMixin",
+		"PlayerMixin",
+		"ReloadableServerResourcesMixin",
+		"ResultSlotMixin",
+		"ServerLevelMixin",
+		"ServerPacksSourceMixin",
+		"ServerPlayerMixin"
+	],
+	"client": [
+		"client.MultiPlayerGameModeMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1,
+		"maxShiftBy": 3
+	}
+}

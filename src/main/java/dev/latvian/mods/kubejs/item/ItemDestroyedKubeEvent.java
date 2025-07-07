@@ -4,27 +4,30 @@ import dev.latvian.mods.kubejs.player.KubePlayerEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.event.entity.player.PlayerDestroyItemEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class ItemDestroyedKubeEvent implements KubePlayerEvent {
-	private final PlayerDestroyItemEvent event;
+	private final Player player;
+	private final ItemStack item;
+	private final InteractionHand hand;
 
-	public ItemDestroyedKubeEvent(PlayerDestroyItemEvent e) {
-		event = e;
+	public ItemDestroyedKubeEvent(Player player, ItemStack item, InteractionHand hand) {
+		this.player = player;
+		this.item = item;
+		this.hand = hand;
 	}
 
 	@Override
 	public Player getEntity() {
-		return event.getEntity();
+		return player;
 	}
 
 	@Nullable
 	public InteractionHand getHand() {
-		return event.getHand();
+		return hand;
 	}
 
 	public ItemStack getItem() {
-		return event.getOriginal();
+		return item;
 	}
 }

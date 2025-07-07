@@ -14,6 +14,8 @@ import dev.latvian.mods.kubejs.util.WithCodec;
 import dev.latvian.mods.kubejs.web.RelativeURL;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.util.SpecialEquality;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -22,8 +24,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 
 import java.util.Map;
 
@@ -101,7 +101,7 @@ public interface FluidStackKJS extends
 
 	@Override
 	default int kjs$getAmount() {
-		return kjs$self().getAmount();
+		return Math.toIntExact(kjs$self().getAmount());
 	}
 
 	@Override

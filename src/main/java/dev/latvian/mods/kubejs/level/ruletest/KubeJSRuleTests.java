@@ -1,16 +1,16 @@
 package dev.latvian.mods.kubejs.level.ruletest;
 
 import com.mojang.serialization.MapCodec;
-import dev.latvian.mods.kubejs.KubeJS;
-import net.minecraft.core.registries.Registries;
+import me.textrue.kubejs.fabric.helper.RegistryHelper;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestType;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
 public interface KubeJSRuleTests {
-	DeferredRegister<RuleTestType<?>> REGISTRY = DeferredRegister.create(Registries.RULE_TEST, KubeJS.MOD_ID);
+	//DeferredRegister<RuleTestType<?>> REGISTRY = DeferredRegister.create(Registries.RULE_TEST, KubeJS.MOD_ID);
 
 	Supplier<RuleTestType<InvertRuleTest>> INVERT = register("invert", InvertRuleTest.CODEC);
 	Supplier<RuleTestType<AlwaysFalseRuleTest>> ALWAYS_FALSE = register("always_false", AlwaysFalseRuleTest.CODEC);
@@ -19,6 +19,12 @@ public interface KubeJSRuleTests {
 
 	static <P extends RuleTest> Supplier<RuleTestType<P>> register(String id, MapCodec<P> codec) {
 		var type = (RuleTestType<P>) () -> codec;
-		return REGISTRY.register(id, () -> type);
+		return RegistryHelper.registerRuleTest(id, () -> type);
+	}
+
+	static void init() {
+		RegistryHelper.RULE_TESTS.forEach((id, ruleTest) -> {
+			Registry.register(BuiltInRegistries.RULE_TEST, id, ruleTest);
+		});
 	}
 }

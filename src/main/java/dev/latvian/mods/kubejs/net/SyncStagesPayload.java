@@ -1,10 +1,10 @@
 package dev.latvian.mods.kubejs.net;
 
 import io.netty.buffer.ByteBuf;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +20,7 @@ public record SyncStagesPayload(Collection<String> stages) implements CustomPack
 		return KubeJSNet.SYNC_STAGES;
 	}
 
-	public void handle(IPayloadContext ctx) {
-		ctx.enqueueWork(() -> ctx.player().kjs$getStages().replace(stages));
+	public static void handle(SyncStagesPayload payload, ClientPlayNetworking.Context ctx) {
+		ctx.client().execute(() -> ctx.player().kjs$getStages().replace(payload.stages));
 	}
 }

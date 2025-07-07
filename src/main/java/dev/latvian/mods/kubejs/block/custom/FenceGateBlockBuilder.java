@@ -9,13 +9,12 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.neoforged.neoforge.common.Tags;
 
 @ReturnsSelf
 public class FenceGateBlockBuilder extends ShapedBlockBuilder {
 	public static final ResourceLocation[] FENCE_GATE_TAGS = {
 		BlockTags.FENCE_GATES.location(),
-		Tags.Blocks.FENCE_GATES.location()
+		//ConventionalBlockTags.FENCE_GATES.location()
 	};
 
 	private static final ResourceLocation MODEL = ResourceLocation.withDefaultNamespace("block/template_fence_gate");

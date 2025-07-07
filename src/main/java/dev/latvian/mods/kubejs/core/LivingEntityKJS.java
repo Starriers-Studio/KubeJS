@@ -10,6 +10,7 @@ import dev.latvian.mods.rhino.util.RemapPrefixForJS;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -146,7 +147,7 @@ public interface LivingEntityKJS extends EntityKJS {
 		var stack = kjs$self().getItemBySlot(slot);
 
 		if (!stack.isEmpty()) {
-			stack.hurtAndBreak(amount, (ServerLevel) kjs$self().level(), kjs$self(), item -> onBroken.accept(stack));
+			stack.hurtAndBreak(amount, (ServerLevel) kjs$self().level(), (ServerPlayer) kjs$self(), item -> onBroken.accept(stack));
 
 			if (stack.isEmpty()) {
 				kjs$self().setItemSlot(slot, ItemStack.EMPTY);

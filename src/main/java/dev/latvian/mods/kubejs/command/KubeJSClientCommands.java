@@ -3,10 +3,10 @@ package dev.latvian.mods.kubejs.command;
 import com.mojang.brigadier.CommandDispatcher;
 import dev.latvian.mods.kubejs.client.KubeJSClient;
 import dev.latvian.mods.kubejs.script.data.GeneratedData;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.profiling.InactiveProfiler;
@@ -14,18 +14,18 @@ import net.minecraft.util.profiling.InactiveProfiler;
 import java.util.concurrent.CompletableFuture;
 
 public class KubeJSClientCommands {
-	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-		var cmd = Commands.literal("kubejs")
-			.then(Commands.literal("reload")
-				.then(Commands.literal("client-scripts")
+	public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+		var cmd = ClientCommandManager.literal("kubejs")
+			.then(ClientCommandManager.literal("reload")
+				.then(ClientCommandManager.literal("client-scripts")
 					.requires(source -> true)
 					.executes(context -> reloadClient(context.getSource()))
 				)
-				.then(Commands.literal("textures")
+				.then(ClientCommandManager.literal("textures")
 					.requires(source -> true)
 					.executes(context -> reloadTextures(context.getSource()))
 				)
-				.then(Commands.literal("lang")
+				.then(ClientCommandManager.literal("lang")
 					.requires(source -> true)
 					.executes(context -> reloadLang(context.getSource()))
 				)
@@ -34,18 +34,18 @@ public class KubeJSClientCommands {
 		dispatcher.register(cmd);
 	}
 
-	private static int reloadClient(CommandSourceStack source) {
+	private static int reloadClient(FabricClientCommandSource source) {
 		KubeJSClient.reloadClientScripts();
-		source.sendSystemMessage(Component.literal("Done! To reload textures, models and other assets, press F3 + T"));
+		source.sendFeedback(Component.literal("Done! To reload textures, models and other assets, press F3 + T"));
 		return 1;
 	}
 
-	private static int reloadTextures(CommandSourceStack source) {
+	private static int reloadTextures(FabricClientCommandSource source) {
 		reloadResources(Minecraft.getInstance().getTextureManager());
 		return 1;
 	}
 
-	private static int reloadLang(CommandSourceStack source) {
+	private static int reloadLang(FabricClientCommandSource source) {
 		KubeJSClient.reloadClientScripts();
 		reloadResources(Minecraft.getInstance().getLanguageManager());
 		return 1;

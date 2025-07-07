@@ -2,21 +2,21 @@ package dev.latvian.mods.kubejs.holder;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import dev.latvian.mods.kubejs.KubeJS;
+import me.textrue.kubejs.fabric.helper.RegistryHelper;
+import me.textrue.kubejs.fabric.thirdparty.holdersets.HolderSetType;
+import me.textrue.kubejs.fabric.thirdparty.holdersets.ICustomHolderSet;
+import me.textrue.kubejs.fabric.thirdparty.registries.ThirdPartyRegistries;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import net.neoforged.neoforge.registries.holdersets.HolderSetType;
-import net.neoforged.neoforge.registries.holdersets.ICustomHolderSet;
+
 
 public interface KubeJSHolderSets {
-	DeferredRegister<HolderSetType> REGISTRY = DeferredRegister.create(NeoForgeRegistries.Keys.HOLDER_SET_TYPES, KubeJS.MOD_ID);
+	//DeferredRegister<HolderSetType> REGISTRY = DeferredRegister.create(NeoForgeRegistries.Keys.HOLDER_SET_TYPES, KubeJS.MOD_ID);
 
-	Holder<HolderSetType> REGEX = REGISTRY.register("regex", () -> new HolderSetType() {
+	Holder<HolderSetType> REGEX = RegistryHelper.registerHolderSet("regex", () -> new HolderSetType() {
 		@Override
 		public <T> MapCodec<? extends ICustomHolderSet<T>> makeCodec(ResourceKey<? extends Registry<T>> registryKey, Codec<Holder<T>> holderCodec, boolean forceList) {
 			return RegExHolderSet.codec(registryKey);
@@ -28,7 +28,7 @@ public interface KubeJSHolderSets {
 		}
 	});
 
-	Holder<HolderSetType> NAMESPACE = REGISTRY.register("namespace", () -> new HolderSetType() {
+	Holder<HolderSetType> NAMESPACE = RegistryHelper.registerHolderSet("namespace", () -> new HolderSetType() {
 		@Override
 		public <T> MapCodec<? extends ICustomHolderSet<T>> makeCodec(ResourceKey<? extends Registry<T>> registryKey, Codec<Holder<T>> holderCodec, boolean forceList) {
 			return NamespaceHolderSet.codec(registryKey);
@@ -39,4 +39,10 @@ public interface KubeJSHolderSets {
 			return NamespaceHolderSet.streamCodec(registryKey);
 		}
 	});
+
+	static void init() {
+		RegistryHelper.HOLDER_SETS.forEach((id, holderSetType) -> {
+			Registry.register(ThirdPartyRegistries.HOLDER_SET_TYPES, id, holderSetType);
+		});
+	}
 }

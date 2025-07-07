@@ -91,7 +91,6 @@ import dev.latvian.mods.kubejs.plugin.builtin.wrapper.JavaWrapper;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.KMath;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.MiscWrappers;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.NBTWrapper;
-import dev.latvian.mods.kubejs.plugin.builtin.wrapper.NativeEventWrapper;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.ParticleOptionsWrapper;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.RegistryWrapper;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.SizedIngredientWrapper;
@@ -175,6 +174,12 @@ import dev.latvian.mods.kubejs.web.LocalWebServerRegistry;
 import dev.latvian.mods.kubejs.web.local.KubeJSWeb;
 import dev.latvian.mods.rhino.type.RecordTypeInfo;
 import dev.latvian.mods.rhino.type.TypeInfo;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.SizedIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.FluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.ingredients.fluids.SizedFluidIngredient;
+import me.textrue.kubejs.fabric.thirdparty.registries.ThirdPartyRegistries;
+import me.textrue.kubejs.fabric.thirdparty.items.ItemAbility;
 import net.minecraft.Util;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.core.BlockPos;
@@ -259,12 +264,6 @@ import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.ItemAbility;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -331,7 +330,7 @@ public class BuiltinKubeJSPlugin implements KubeJSPlugin {
 			reg.add(KubeJS.id("thick"), ThickFluidBuilder.class, ThickFluidBuilder::new);
 		});
 
-		registry.addDefault(NeoForgeRegistries.Keys.FLUID_TYPES, FluidTypeBuilder.class, FluidTypeBuilder::new);
+		registry.addDefault(ThirdPartyRegistries.Keys.FLUID_TYPES, FluidTypeBuilder.class, FluidTypeBuilder::new);
 		registry.addDefault(Registries.MOB_EFFECT, MobEffectBuilder.class, MobEffectBuilder::new);
 		registry.addDefault(Registries.POTION, PotionBuilder.class, PotionBuilder::new);
 		registry.addDefault(Registries.PARTICLE_TYPE, ParticleTypeBuilder.class, ParticleTypeBuilder::new);
@@ -469,7 +468,8 @@ public class BuiltinKubeJSPlugin implements KubeJSPlugin {
 
 		bindings.add("BlockProperties", BlockStateProperties.class);
 
-		bindings.add("NativeEvents", NativeEventWrapper.class);
+		// TODO: NEED REWRITE
+		//bindings.add("NativeEvents", NativeEventWrapper.class);
 	}
 
 	@Override

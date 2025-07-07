@@ -3,6 +3,12 @@ package dev.latvian.mods.kubejs.block.entity;
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.core.InventoryKJS;
 import dev.latvian.mods.kubejs.item.ItemPredicate;
+import me.textrue.kubejs.fabric.thirdparty.items.ItemStackHandler;
+import me.textrue.kubejs.fabric.thirdparty.util.ThirdPartyContexts;
+import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -12,9 +18,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -30,8 +33,9 @@ public class InventoryAttachment implements BlockEntityAttachment {
 		}
 
 		@Override
-		public List<BlockCapability<?, ?>> getCapabilities() {
-			return List.of(Capabilities.ItemHandler.BLOCK);
+		public List<BlockApiLookup<?, ?>> getCapabilities() {
+			BlockApiLookup<ItemStackHandler, Direction> lookup = BlockApiLookup.get(ThirdPartyContexts.ITEM_HANDLER_BLOCK_ID, ItemStackHandler.class, Direction.class);
+			return List.of(lookup);
 		}
 	}
 
@@ -53,8 +57,9 @@ public class InventoryAttachment implements BlockEntityAttachment {
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemStack stack) {
-			return (attachment.inputFilter == null || attachment.inputFilter.test(stack)) && super.isItemValid(slot, stack);
+		public boolean isItemValid(int slot, ItemVariant resource, int count) {
+			var stack = resource.toStack(count);
+			return (attachment.inputFilter == null || attachment.inputFilter.test(stack)) && super.isItemValid(slot, resource, count);
 		}
 
 		@Override
@@ -65,6 +70,16 @@ public class InventoryAttachment implements BlockEntityAttachment {
 		@Override
 		public int kjs$getHeight() {
 			return attachment.height;
+		}
+
+		@Override
+		public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+			return 0;
+		}
+
+		@Override
+		public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+			return 0;
 		}
 	}
 
@@ -88,8 +103,8 @@ public class InventoryAttachment implements BlockEntityAttachment {
 
 	@Override
 	@Nullable
-	public <CAP, SRC> CAP getCapability(BlockCapability<CAP, SRC> capability) {
-		if (capability == Capabilities.ItemHandler.BLOCK) {
+	public <CAP, SRC> CAP getCapability(BlockApiLookup<CAP, SRC> capability) {
+		if (capability == BlockApiLookup.get(ThirdPartyContexts.ITEM_HANDLER_BLOCK_ID, ItemStackHandler.class, Direction.class)) {
 			return (CAP) inventory;
 		}
 

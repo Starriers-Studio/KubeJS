@@ -15,6 +15,7 @@ import dev.latvian.mods.kubejs.util.ID;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.type.TypeInfo;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,7 +25,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 public record RegistryComponent<T>(Registry<T> registry, @Nullable RegistryType<T> regType, Codec<Holder<T>> codec) implements RecipeComponent<Holder<T>> {
@@ -89,7 +89,7 @@ public record RegistryComponent<T>(Registry<T> registry, @Nullable RegistryType<
 
 	@Override
 	public void buildUniqueId(UniqueIdBuilder builder, Holder<T> value) {
-		var id = value.getKey();
+		var id = value.unwrapKey().orElseThrow();
 
 		if (id != null) {
 			builder.append(id.location());

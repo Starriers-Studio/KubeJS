@@ -1,6 +1,7 @@
 package dev.latvian.mods.kubejs.core;
 
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.helper.ItemEntityHelper;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -20,11 +21,11 @@ public interface ItemEntityKJS extends EntityKJS {
 	}
 
 	default int kjs$getLifespan() {
-		return kjs$self().lifespan;
+		return ItemEntityHelper.getLifespan(kjs$self());
 	}
 
 	default void kjs$setLifespan(int lifespan) {
-		kjs$self().lifespan = lifespan;
+		ItemEntityHelper.setLifespan(kjs$self(), lifespan);
 	}
 
 	default void kjs$setDefaultPickUpDelay() {

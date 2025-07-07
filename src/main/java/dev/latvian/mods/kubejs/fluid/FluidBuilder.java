@@ -2,6 +2,7 @@ package dev.latvian.mods.kubejs.fluid;
 
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.block.BlockRenderType;
+import dev.latvian.mods.kubejs.client.KubeJSModClientEventHandler;
 import dev.latvian.mods.kubejs.color.KubeColor;
 import dev.latvian.mods.kubejs.color.SimpleColor;
 import dev.latvian.mods.kubejs.generator.KubeAssetGenerator;
@@ -9,12 +10,12 @@ import dev.latvian.mods.kubejs.registry.AdditionalObjectRegistry;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.util.ID;
 import dev.latvian.mods.rhino.util.ReturnsSelf;
+import me.textrue.kubejs.fabric.thirdparty.fluids.BaseFlowingFluid;
+import me.textrue.kubejs.fabric.thirdparty.registries.ThirdPartyRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.FlowingFluid;
-import net.neoforged.neoforge.fluids.BaseFlowingFluid;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -42,6 +43,7 @@ public class FluidBuilder extends BuilderBase<FlowingFluid> {
 		flowingFluid = new FlowingFluidBuilder(this);
 		block = new FluidBlockBuilder(this);
 		bucketItem = new FluidBucketItemBuilder(this);
+		KubeJSModClientEventHandler.registerClientExtensions(flowingFluid.get());
 	}
 
 	@Override
@@ -78,7 +80,7 @@ public class FluidBuilder extends BuilderBase<FlowingFluid> {
 
 	@Override
 	public void createAdditionalObjects(AdditionalObjectRegistry registry) {
-		registry.add(NeoForgeRegistries.Keys.FLUID_TYPES, fluidType);
+		registry.add(ThirdPartyRegistries.Keys.FLUID_TYPES, fluidType);
 		registry.add(Registries.FLUID, flowingFluid);
 
 		if (block != null) {

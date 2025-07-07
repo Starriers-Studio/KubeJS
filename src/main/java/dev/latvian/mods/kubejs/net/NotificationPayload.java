@@ -2,10 +2,10 @@ package dev.latvian.mods.kubejs.net;
 
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.util.NotificationToastData;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record NotificationPayload(NotificationToastData data) implements CustomPacketPayload {
 	public static final StreamCodec<RegistryFriendlyByteBuf, NotificationPayload> STREAM_CODEC = NotificationToastData.STREAM_CODEC.map(NotificationPayload::new, NotificationPayload::data);
@@ -15,12 +15,12 @@ public record NotificationPayload(NotificationToastData data) implements CustomP
 		return KubeJSNet.NOTIFICATION;
 	}
 
-	public void handle(IPayloadContext ctx) {
-		ctx.enqueueWork(() -> {
+	public static void handle(NotificationPayload payload, ClientPlayNetworking.Context ctx) {
+		ctx.client().execute(() -> {
 			var p0 = KubeJS.PROXY.getClientPlayer();
 
 			if (p0 != null) {
-				p0.kjs$notify(data);
+				p0.kjs$notify(payload.data);
 			}
 		});
 	}

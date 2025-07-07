@@ -4,17 +4,17 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import me.textrue.kubejs.fabric.helper.RegistryOpsHelper;
+import me.textrue.kubejs.fabric.thirdparty.holdersets.HolderSetType;
+import me.textrue.kubejs.fabric.thirdparty.holdersets.ICustomHolderSet;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
-import net.neoforged.neoforge.registries.holdersets.HolderSetType;
-import net.neoforged.neoforge.registries.holdersets.ICustomHolderSet;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.Set;
 public class NamespaceHolderSet<T> extends HolderSet.ListBacked<T> implements ICustomHolderSet<T> {
 	public static <T> MapCodec<NamespaceHolderSet<T>> codec(ResourceKey<? extends Registry<T>> registryKey) {
 		return RecordCodecBuilder.mapCodec(instance -> instance.group(
-			RegistryOps.retrieveRegistryLookup(registryKey).forGetter(s -> s.registryLookup),
+			RegistryOpsHelper.retrieveRegistryLookup(registryKey).forGetter(s -> s.registryLookup),
 			Codec.STRING.fieldOf("namespace").forGetter(s -> s.namespace)
 		).apply(instance, NamespaceHolderSet::new));
 	}

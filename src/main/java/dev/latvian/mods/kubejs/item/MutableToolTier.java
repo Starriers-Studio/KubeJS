@@ -1,8 +1,8 @@
 package dev.latvian.mods.kubejs.item;
 
 import dev.latvian.mods.rhino.util.RemapForJS;
+import me.textrue.kubejs.fabric.helper.TagHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -54,7 +54,7 @@ public class MutableToolTier implements Tier {
 	}
 
 	public void setIncorrectBlocksForDropsTag(ResourceLocation tag) {
-		incorrectBlocksForDrops = BlockTags.create(tag);
+		incorrectBlocksForDrops = TagHelper.createBlockTag(tag);
 	}
 
 	public ResourceLocation getIncorrectBlocksForDropsTag() {

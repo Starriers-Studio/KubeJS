@@ -1,6 +1,6 @@
 package dev.latvian.mods.kubejs.server;
 
-import dev.latvian.mods.kubejs.KubeJS;
+import com.mojang.brigadier.CommandDispatcher;
 import dev.latvian.mods.kubejs.command.CommandRegistryKubeEvent;
 import dev.latvian.mods.kubejs.command.KubeJSCommands;
 import dev.latvian.mods.kubejs.gui.chest.CustomChestMenu;
@@ -12,53 +12,60 @@ import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
 import dev.latvian.mods.kubejs.web.LocalWebServer;
 import dev.latvian.mods.kubejs.web.WebServerProperties;
+import me.textrue.kubejs.fabric.thirdparty.events.CommandPerformEvent;
+import me.textrue.kubejs.fabric.thirdparty.events.entity.player.ItemPickupEvents;
+import me.textrue.kubejs.fabric.thirdparty.util.event.ThirdPartyEventResult;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
-import net.neoforged.neoforge.event.CommandEvent;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.UUID;
 
-@EventBusSubscriber(modid = KubeJS.MOD_ID)
 public class KubeJSServerEventHandler {
 	private static final LevelResource PERSISTENT_DATA = new LevelResource("kubejs_persistent_data.nbt");
 
-	@SubscribeEvent
-	public static void registerCommands(RegisterCommandsEvent event) {
-		KubeJSCommands.register(event.getDispatcher());
+	public static void init() {
+		CommandRegistrationCallback.EVENT.register(KubeJSServerEventHandler::registerCommands);
+		ServerLifecycleEvents.SERVER_STARTING.register(KubeJSServerEventHandler::serverBeforeStart);
+		ServerLifecycleEvents.SERVER_STOPPING.register(KubeJSServerEventHandler::serverStopping);
+		ServerLifecycleEvents.SERVER_STOPPED.register(KubeJSServerEventHandler::serverStopped);
+		ServerWorldEvents.LOAD.register(KubeJSServerEventHandler::serverLevelLoaded);
+		CommandPerformEvent.EVENT.register(KubeJSServerEventHandler::command);
+		ItemPickupEvents.PRE.register(KubeJSServerEventHandler::preventPickupDuringChestGUI);
+	}
+
+	public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess, Commands.CommandSelection environment) {
+		KubeJSCommands.register(dispatcher);
 
 		if (ServerEvents.COMMAND_REGISTRY.hasListeners()) {
-			ServerEvents.COMMAND_REGISTRY.post(ScriptType.SERVER, new CommandRegistryKubeEvent(event.getDispatcher(), event.getBuildContext(), event.getCommandSelection()));
+			ServerEvents.COMMAND_REGISTRY.post(ScriptType.SERVER, new CommandRegistryKubeEvent(dispatcher, registryAccess, environment));
 		}
 	}
 
-	@SubscribeEvent
-	public static void serverBeforeStart(ServerAboutToStartEvent event) {
-		var server = event.getServer();
-
-		if (FMLEnvironment.dist == Dist.DEDICATED_SERVER && !PlatformWrapper.isGeneratingData() && WebServerProperties.get().enabled && !WebServerProperties.get().publicAddress.isEmpty()) {
+	public static void serverBeforeStart(MinecraftServer server) {
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER && !PlatformWrapper.isGeneratingData() && WebServerProperties.get().enabled && !WebServerProperties.get().publicAddress.isEmpty()) {
 			LocalWebServer.start(server, false);
 		}
 
@@ -99,35 +106,30 @@ public class KubeJSServerEventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void serverStarting(ServerStartingEvent event) {
-		ServerEvents.LOADED.post(ScriptType.SERVER, new ServerKubeEvent(event.getServer()));
+	public static void serverStarting(MinecraftServer server) {
+		ServerEvents.LOADED.post(ScriptType.SERVER, new ServerKubeEvent(server));
 	}
 
-	@SubscribeEvent
-	public static void serverStopping(ServerStoppingEvent event) {
-		ServerEvents.UNLOADED.post(ScriptType.SERVER, new ServerKubeEvent(event.getServer()));
+	public static void serverStopping(MinecraftServer server) {
+		ServerEvents.UNLOADED.post(ScriptType.SERVER, new ServerKubeEvent(server));
 	}
 
-	@SubscribeEvent
-	public static void serverStopped(ServerStoppedEvent event) {
+	public static void serverStopped(MinecraftServer server) {
 		RegistryAccessContainer.current = RegistryAccessContainer.BUILTIN;
 	}
 
-	@SubscribeEvent
-	public static void serverLevelLoaded(LevelEvent.Load event) {
-		if (event.getLevel() instanceof ServerLevel level && LevelEvents.LOADED.hasListeners(level.dimension())) {
+	public static void serverLevelLoaded(MinecraftServer server, ServerLevel serverLevel) {
+		if (serverLevel instanceof ServerLevel level && LevelEvents.LOADED.hasListeners(level.dimension())) {
 			LevelEvents.LOADED.post(new SimpleLevelKubeEvent(level), level.dimension());
 		}
 	}
 
-	@SubscribeEvent
-	public static void serverLevelSaved(LevelEvent.Save event) {
-		if (event.getLevel() instanceof ServerLevel level && LevelEvents.SAVED.hasListeners(level.dimension())) {
+	public static void serverLevelSaved(ServerLevel serverLevel) {
+		if (serverLevel instanceof ServerLevel level && LevelEvents.SAVED.hasListeners(level.dimension())) {
 			LevelEvents.SAVED.post(new SimpleLevelKubeEvent(level), level.dimension());
 		}
 
-		if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) {
+		if (serverLevel instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) {
 			var serverData = level.getServer().kjs$getPersistentData().copy();
 			var p = level.getServer().getWorldPath(PERSISTENT_DATA);
 
@@ -162,28 +164,25 @@ public class KubeJSServerEventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void command(CommandEvent event) {
+	public static ThirdPartyEventResult command(CommandPerformEvent event) {
 		if (ServerEvents.COMMAND.hasListeners()) {
 			var e = new CommandKubeEvent(event);
 
 			if (ServerEvents.COMMAND.hasListeners(e.getCommandName())) {
-				ServerEvents.COMMAND.post(e, e.getCommandName()).applyCancel(event);
+				return ServerEvents.COMMAND.post(e, e.getCommandName()).compoundResult().result();
 			}
 		}
+		return ThirdPartyEventResult.pass();
 	}
 
-	@SubscribeEvent
-	public static void addReloadListeners(AddReloadListenerEvent event) {
-		event.addListener(new KubeJSReloadListener(event.getServerResources()));
+	public static ResourceManagerReloadListener addReloadListeners(ReloadableServerResources resources) {
+		return new KubeJSReloadListener(resources);
 	}
 
-	@SubscribeEvent
-	public static void preventPickupDuringChestGUI(ItemEntityPickupEvent.Pre event) {
-		var e = event.getPlayer();
-
-		if (e instanceof ServerPlayer player && player.isAlive() && !player.hasDisconnected() && player.containerMenu instanceof CustomChestMenu) {
-			event.setCanPickup(TriState.FALSE);
+	public static ThirdPartyEventResult preventPickupDuringChestGUI(Player player, ItemEntity entity, ItemStack stack) {
+		if (player instanceof ServerPlayer serverPlayer && player.isAlive() && !serverPlayer.hasDisconnected() && player.containerMenu instanceof CustomChestMenu) {
+			return ThirdPartyEventResult.interruptFalse();
 		}
+		return ThirdPartyEventResult.pass();
 	}
 }
