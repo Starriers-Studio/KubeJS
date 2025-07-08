@@ -41,6 +41,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biomes;
@@ -338,11 +339,9 @@ public class ImageGenerator {
 			ROTATED_BLOCK_TRANSFORM.apply(false, pose);
 			pose.translate(-0.5F, -0.5F, -0.5F);
 
-//			for (var renderType : model.getRenderTypes(state, RandomSource.create(0L), ModelData.EMPTY)) {
-//				render.mc.getBlockRenderer().renderSingleBlock(state, pose, render.graphics.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
-//			}
-
-			render.mc.getBlockRenderer().renderSingleBlock(state, pose, render.graphics.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY);
+			for (var renderType : model.getRenderTypes(state, RandomSource.create(0L))) {
+				render.mc.getBlockRenderer().renderSingleBlock(state, pose, render.graphics.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY);
+			}
 
 			try {
 				var fluidState = state.getFluidState();

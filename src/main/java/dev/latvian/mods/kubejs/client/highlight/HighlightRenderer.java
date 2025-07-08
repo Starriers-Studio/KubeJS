@@ -20,6 +20,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import me.textrue.kubejs.fabric.helper.NetworkHelper;
+import me.textrue.kubejs.fabric.thirdparty.mixin.client.accessors.AbstractContainerScreenAccessor;
+import me.textrue.kubejs.fabric.thirdparty.util.RenderTypeHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -51,8 +53,6 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.client.RenderTypeHelper;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -418,8 +418,8 @@ public class HighlightRenderer {
 
 			var bufferSource = sources.get(entry.getIntValue());
 
-			for (var renderType : model.getRenderTypes(state, RandomSource.create(seed), ModelData.EMPTY)) {
-				mc.getBlockRenderer().getModelRenderer().tesselateBlock(mc.level, model, state, pos, ms, bufferSource.getBuffer(RenderTypeHelper.getMovingBlockRenderType(renderType)), false, RandomSource.create(), seed, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
+			for (var renderType : model.getRenderTypes(state, RandomSource.create(seed))) {
+				mc.getBlockRenderer().getModelRenderer().tesselateBlock(mc.level, model, state, pos, ms, bufferSource.getBuffer(RenderTypeHelper.getMovingBlockRenderType(renderType)), false, RandomSource.create(), seed, OverlayTexture.NO_OVERLAY);
 			}
 
 			var entity = mc.level.getBlockEntity(pos);
@@ -515,8 +515,8 @@ public class HighlightRenderer {
 		var menu = screen.getMenu();
 
 		for (var slot : menu.slots) {
-			int sx = slot.x + screen.getGuiLeft();
-			int sy = slot.y + screen.getGuiTop();
+			int sx = slot.x + ((AbstractContainerScreenAccessor) screen).getLeftPos();
+			int sy = slot.y + ((AbstractContainerScreenAccessor) screen).getTopPos();
 
 			if (mx >= sx && mx < sx + 16 && my >= sy && my < sy + 16 && slot.hasItem()) {
 				hoveredSlots.add(slot);
@@ -534,8 +534,8 @@ public class HighlightRenderer {
 		var bufferSource = new WrappedMultiBufferSource(mc.renderBuffers().bufferSource(), color.kjs$getRGB());
 
 		for (var slot : hoveredSlots) {
-			int x = slot.x + screen.getGuiLeft();
-			int y = slot.y + screen.getGuiTop();
+			int x = slot.x + ((AbstractContainerScreenAccessor) screen).getLeftPos();
+			int y = slot.y + ((AbstractContainerScreenAccessor) screen).getTopPos();
 			var stack = slot.getItem();
 
 			var model = mc.getItemRenderer().getModel(stack, mc.level, mc.player, 0);

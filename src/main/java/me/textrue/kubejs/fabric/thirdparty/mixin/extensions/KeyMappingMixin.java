@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.extensions;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
@@ -9,6 +9,7 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.platform.InputConstants;
 import me.textrue.kubejs.fabric.thirdparty.extensions.KeyMappingExtension;
+import me.textrue.kubejs.fabric.thirdparty.mixin.accessors.KeyMappingAccessor;
 import me.textrue.kubejs.fabric.thirdparty.settings.IKeyConflictContext;
 import me.textrue.kubejs.fabric.thirdparty.settings.KeyConflictContext;
 import me.textrue.kubejs.fabric.thirdparty.settings.KeyMappingLookup;

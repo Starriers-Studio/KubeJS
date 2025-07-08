@@ -66,6 +66,15 @@
 			"net/minecraft/class_304": [
 				"me/textrue/kubejs/fabric/thirdparty/extensions/KeyMappingExtension"
 			],
+			"net/minecraft/class_1921": [
+				"me/textrue/kubejs/fabric/thirdparty/extensions/RenderTypeExtension"
+			],
+			"net/minecraft/class_4696": [
+				"me/textrue/kubejs/fabric/thirdparty/extensions/ItemBlockRenderTypesExtension"
+			],
+			"net/minecraft/class_1087": [
+				"me/textrue/kubejs/fabric/thirdparty/extensions/BakedModelExtension"
+			],
 
 			"net/minecraft/server/MinecraftServer": [
 				"dev/latvian/mods/kubejs/core/MinecraftServerKJS"

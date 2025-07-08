@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.accessors;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

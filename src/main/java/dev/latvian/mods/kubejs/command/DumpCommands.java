@@ -9,7 +9,7 @@ import dev.latvian.mods.kubejs.script.KubeJSContext;
 import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.kubejs.util.UtilsJS;
 import dev.latvian.mods.rhino.JavaMembers;
-import me.textrue.kubejs.fabric.thirdparty.mixin.MinecraftServerAccessor;
+import me.textrue.kubejs.fabric.thirdparty.mixin.accessors.MinecraftServerAccessor;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
@@ -26,6 +26,7 @@ public class DumpCommands {
 	private static final char UNICODE_TICK = '✔';
 	private static final char UNICODE_CROSS = '✘';
 
+	@SuppressWarnings("removal")
 	public static int events(CommandSourceStack source) {
 		var groups = EventGroups.ALL.get().map();
 

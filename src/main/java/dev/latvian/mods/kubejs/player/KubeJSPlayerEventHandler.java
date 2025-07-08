@@ -12,7 +12,7 @@ import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerContainerE
 import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerLoggedEvents;
 import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerRespawnEvent;
 import me.textrue.kubejs.fabric.thirdparty.events.ServerChatEvents;
-import me.textrue.kubejs.fabric.thirdparty.mixin.MinecraftServerAccessor;
+import me.textrue.kubejs.fabric.thirdparty.mixin.accessors.MinecraftServerAccessor;
 import me.textrue.kubejs.fabric.thirdparty.util.event.ThirdPartyEventResult;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.resources.ResourceKey;

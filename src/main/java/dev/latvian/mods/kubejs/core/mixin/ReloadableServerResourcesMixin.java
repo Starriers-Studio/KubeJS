@@ -3,7 +3,7 @@ package dev.latvian.mods.kubejs.core.mixin;
 import dev.latvian.mods.kubejs.core.ReloadableServerResourcesKJS;
 import dev.latvian.mods.kubejs.server.ServerScriptManager;
 import dev.latvian.mods.kubejs.util.RegistryAccessContainer;
-import me.textrue.kubejs.fabric.thirdparty.mixin.MinecraftServerAccessor;
+import me.textrue.kubejs.fabric.thirdparty.mixin.accessors.MinecraftServerAccessor;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;

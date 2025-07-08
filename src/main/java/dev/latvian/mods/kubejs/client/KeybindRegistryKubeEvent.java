@@ -3,9 +3,9 @@ package dev.latvian.mods.kubejs.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.latvian.mods.kubejs.plugin.builtin.wrapper.GLFWInputWrapper;
 import dev.latvian.mods.rhino.util.HideFromJS;
-import net.minecraft.client.KeyMapping;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyModifier;
+import me.textrue.kubejs.fabric.helper.key.KeyMappingHelper;
+import me.textrue.kubejs.fabric.thirdparty.settings.KeyConflictContext;
+import me.textrue.kubejs.fabric.thirdparty.settings.KeyModifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +84,7 @@ public class KeybindRegistryKubeEvent implements ClientKubeEvent {
 		@HideFromJS
 		public KubeJSKeybinds.KubeKey create() {
 			var key = KubeJSKeybinds.getOrCreate(id);
-			key.mapping = new KeyMapping("key.kubejs.%s".formatted(id), keyConflictContext, modifier, inputType, defaultKey, category);
+			key.mapping = KeyMappingHelper.create(category, "key.kubejs.%s".formatted(id), inputType).setContext(keyConflictContext).setModifier(modifier).build(defaultKey).getMapping();
 			return key;
 		}
 	}

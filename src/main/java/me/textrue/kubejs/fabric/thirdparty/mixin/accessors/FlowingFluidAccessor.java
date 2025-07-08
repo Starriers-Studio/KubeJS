@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.accessors;
 
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FlowingFluid;

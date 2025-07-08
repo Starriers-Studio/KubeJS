@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.extensions;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import me.textrue.kubejs.fabric.thirdparty.extensions.EntityExtension;

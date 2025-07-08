@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.extensions;
 
 import me.textrue.kubejs.fabric.thirdparty.extensions.IngredientExtension;
 import me.textrue.kubejs.fabric.thirdparty.ingredients.ICustomIngredient;

@@ -1,6 +1,5 @@
 package me.textrue.kubejs.fabric.thirdparty.mixin;
 
-
 import dev.latvian.mods.kubejs.player.KubeJSPlayerEventHandler;
 import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerLoggedEvents;
 import me.textrue.kubejs.fabric.thirdparty.events.entity.player.PlayerRespawnEvent;

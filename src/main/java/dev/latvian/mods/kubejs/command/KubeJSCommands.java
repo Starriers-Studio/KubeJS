@@ -29,7 +29,7 @@ import dev.latvian.mods.kubejs.server.DataExport;
 import dev.latvian.mods.kubejs.util.JsonUtils;
 import dev.latvian.mods.kubejs.web.LocalWebServer;
 import me.textrue.kubejs.fabric.helper.NetworkHelper;
-import me.textrue.kubejs.fabric.thirdparty.mixin.MinecraftServerAccessor;
+import me.textrue.kubejs.fabric.thirdparty.mixin.accessors.MinecraftServerAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;

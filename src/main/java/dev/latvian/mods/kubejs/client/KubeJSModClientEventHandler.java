@@ -1,5 +1,6 @@
 package dev.latvian.mods.kubejs.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import dev.latvian.mods.kubejs.KubeJS;
 import dev.latvian.mods.kubejs.block.BlockBuilder;
@@ -22,7 +23,7 @@ import dev.latvian.mods.kubejs.text.tooltip.ItemTooltipData;
 import dev.latvian.mods.kubejs.util.ID;
 import dev.latvian.mods.kubejs.web.LocalWebServer;
 import dev.latvian.mods.kubejs.web.WebServerProperties;
-import me.textrue.kubejs.fabric.helper.key.KeyMappingBuilder;
+import me.textrue.kubejs.fabric.helper.key.KeyMappingHelper;
 import me.textrue.kubejs.fabric.thirdparty.events.AddPackFindersEvent;
 import me.textrue.kubejs.fabric.thirdparty.fluids.BaseFlowingFluid;
 import me.textrue.kubejs.fabric.thirdparty.fluids.extensions.ClientFluidTypeExtensions;
@@ -139,7 +140,7 @@ public class KubeJSModClientEventHandler {
 	}
 
 	public static void registerKeyMappings() {
-		KeyBindingHelper.registerKeyBinding(HighlightRenderer.keyMapping = KeyMappingBuilder.create("key.categories.kubejs", "key.kubejs.kubedex").setContext(KeyConflictContext.UNIVERSAL).setModifier(KeyModifier.NONE).buildKeyboardKey(GLFW.GLFW_KEY_K).getMapping());
+		KeyBindingHelper.registerKeyBinding(HighlightRenderer.keyMapping = KeyMappingHelper.create("key.categories.kubejs", "key.kubejs.kubedex", InputConstants.Type.KEYSYM).setContext(KeyConflictContext.UNIVERSAL).setModifier(KeyModifier.NONE).build(GLFW.GLFW_KEY_K).getMapping());
 
 		var kubeEvent = new KeybindRegistryKubeEvent();
 		KeyBindEvents.REGISTRY.post(kubeEvent);

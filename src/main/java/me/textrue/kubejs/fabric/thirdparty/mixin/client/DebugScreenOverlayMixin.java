@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.client;
 
 import me.textrue.kubejs.fabric.thirdparty.events.CustomizeDebugTextEvent;
 import net.minecraft.client.gui.components.DebugScreenOverlay;

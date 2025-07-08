@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.extensions;
 
 import me.textrue.kubejs.fabric.thirdparty.extensions.FluidStateExtension;
 import me.textrue.kubejs.fabric.thirdparty.fluids.FluidType;

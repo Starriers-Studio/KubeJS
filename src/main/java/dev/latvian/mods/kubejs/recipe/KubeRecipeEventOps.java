@@ -8,9 +8,9 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import dev.latvian.mods.kubejs.script.SourceLine;
+import me.textrue.kubejs.fabric.thirdparty.conditions.ConditionalOps;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ExtraCodecs;
-import net.neoforged.neoforge.common.conditions.ConditionalOps;
 
 public class KubeRecipeEventOps<T> extends ConditionalOps<T> {
 	private final RecipesKubeEvent event;

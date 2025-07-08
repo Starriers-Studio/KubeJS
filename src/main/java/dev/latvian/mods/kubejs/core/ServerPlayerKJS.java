@@ -11,6 +11,7 @@ import dev.latvian.mods.kubejs.net.SetActivePostShaderPayload;
 import dev.latvian.mods.kubejs.player.PlayerStatsJS;
 import dev.latvian.mods.kubejs.util.NotificationToastData;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
+import me.textrue.kubejs.fabric.helper.NetworkHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
@@ -26,7 +27,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
@@ -44,7 +44,7 @@ public interface ServerPlayerKJS extends PlayerKJS {
 	@Override
 	default void kjs$sendData(String channel, @Nullable CompoundTag data) {
 		if (!channel.isEmpty()) {
-			PacketDistributor.sendToPlayer(kjs$self(), new SendDataFromServerPayload(channel, data));
+			NetworkHelper.sendToPlayer(kjs$self(), new SendDataFromServerPayload(channel, data));
 		}
 	}
 
@@ -150,7 +150,7 @@ public interface ServerPlayerKJS extends PlayerKJS {
 
 	@Override
 	default void kjs$notify(NotificationToastData builder) {
-		PacketDistributor.sendToPlayer(kjs$self(), new NotificationPayload(builder));
+		NetworkHelper.sendToPlayer(kjs$self(), new NotificationPayload(builder));
 	}
 
 	default void kjs$openChestGUI(Consumer<KubeJSGUI> gui) {
@@ -167,7 +167,7 @@ public interface ServerPlayerKJS extends PlayerKJS {
 			public AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
 				return new KubeJSMenu(i, inventory, data);
 			}
-		}, data::write);
+		});
 	}
 
 	default void kjs$openInventoryGUI(InventoryKJS inventory, Component title) {
@@ -256,6 +256,6 @@ public interface ServerPlayerKJS extends PlayerKJS {
 
 	@Override
 	default void kjs$setActivePostShader(@Nullable ResourceLocation id) {
-		PacketDistributor.sendToPlayer(kjs$self(), new SetActivePostShaderPayload(Optional.ofNullable(id)));
+		NetworkHelper.sendToPlayer(kjs$self(), new SetActivePostShaderPayload(Optional.ofNullable(id)));
 	}
 }

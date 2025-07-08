@@ -1,4 +1,4 @@
-package me.textrue.kubejs.fabric.thirdparty.mixin;
+package me.textrue.kubejs.fabric.thirdparty.mixin.extensions.block;
 
 import me.textrue.kubejs.fabric.thirdparty.extensions.BlockExtension;
 import net.minecraft.core.BlockPos;

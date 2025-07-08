@@ -4,47 +4,38 @@ import com.mojang.blaze3d.platform.InputConstants;
 import me.textrue.kubejs.fabric.thirdparty.settings.KeyConflictContext;
 import me.textrue.kubejs.fabric.thirdparty.settings.KeyModifier;
 
-public class KeyMappingBuilder {
+public class KeyMappingHelper {
 	protected final String category;
 	protected final String description;
+	protected final InputConstants.Type inputType;
 	protected KeyConflictContext context = KeyConflictContext.UNIVERSAL;
 	protected KeyModifier modifier = KeyModifier.NONE;
 
-	protected KeyMappingBuilder(String category, String description) {
+	protected KeyMappingHelper(String category, String description, InputConstants.Type inputType) {
 		this.category = category;
 		this.description = description;
+		this.inputType = inputType;
 	}
 
-	public static KeyMappingBuilder create(String category, String description) {
-		return new KeyMappingBuilder(category, description);
+	public static KeyMappingHelper create(String category, String description, InputConstants.Type inputType) {
+		return new KeyMappingHelper(category, description, inputType);
 	}
 
-	public KeyMappingBuilder setContext(KeyConflictContext context) {
+	public KeyMappingHelper setContext(KeyConflictContext context) {
 		this.context = context;
 		return this;
 	}
 
-	public KeyMappingBuilder setModifier(KeyModifier modifier) {
+	public KeyMappingHelper setModifier(KeyModifier modifier) {
 		this.modifier = modifier;
 		return this;
 	}
 
-	protected FabricAbstractKeyMapping buildMouse(int mouseButton) {
+	public FabricAbstractKeyMapping build(int button) {
 		FabricKeyMapping keyMapping = new FabricKeyMapping(
 			description,
-			InputConstants.Type.MOUSE,
-			mouseButton,
-			category,
-			context
-		);
-		return new FabricAbstractKeyMapping(keyMapping, context);
-	}
-
-	public FabricAbstractKeyMapping buildKeyboardKey(int key) {
-		FabricKeyMapping keyMapping = new FabricKeyMapping(
-			description,
-			InputConstants.Type.KEYSYM,
-			key,
+			inputType,
+			button,
 			category,
 			context
 		);
