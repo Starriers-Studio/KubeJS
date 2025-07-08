@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(DataComponents.class)
 public class DataComponentsMixin {
-	@ModifyConstant(method = {"lambda$static$1", "method_58570"}, constant = @Constant(intValue = 99))
+	@ModifyConstant(method = "method_58570", constant = @Constant(intValue = 99))
 	private static int kjs$maxSlotSize(int original) {
 		return CommonProperties.get().getMaxSlotSize(original);
 	}

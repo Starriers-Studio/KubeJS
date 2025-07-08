@@ -4,7 +4,6 @@ import dev.latvian.mods.kubejs.KubeJSPaths;
 import dev.latvian.mods.kubejs.event.EventGroups;
 import dev.latvian.mods.kubejs.plugin.ClassFilter;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugins;
-import dev.latvian.mods.kubejs.plugin.builtin.wrapper.NativeEventWrapper;
 import dev.latvian.mods.kubejs.util.Lazy;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import net.fabricmc.loader.api.FabricLoader;
@@ -13,9 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 public enum ScriptType implements ScriptTypePredicate, ScriptTypeHolder {
@@ -37,7 +34,7 @@ public enum ScriptType implements ScriptTypePredicate, ScriptTypeHolder {
 	public final String nameStrip;
 	public transient Executor executor;
 	public final Lazy<ClassFilter> classFilter;
-	public final Map<NativeEventWrapper.Listeners.Key, NativeEventWrapper.Listeners> nativeEventListeners;
+//	public final Map<NativeEventWrapper.Listeners.Key, NativeEventWrapper.Listeners> nativeEventListeners;
 	public KubeJSFileWatcherThread fileWatcherThread;
 
 	ScriptType(String n, String cname, Path path) {
@@ -47,7 +44,7 @@ public enum ScriptType implements ScriptTypePredicate, ScriptTypeHolder {
 		this.nameStrip = name + "_scripts:";
 		this.executor = Runnable::run;
 		this.classFilter = Lazy.of(() -> KubeJSPlugins.createClassFilter(this));
-		this.nativeEventListeners = new HashMap<>(0);
+//		this.nativeEventListeners = new HashMap<>(0);
 	}
 
 	public Path getLogFile() {
@@ -97,9 +94,9 @@ public enum ScriptType implements ScriptTypePredicate, ScriptTypeHolder {
 			}
 		}
 
-		for (var listener : nativeEventListeners.values()) {
-			listener.listeners().clear();
-		}
+//		for (var listener : nativeEventListeners.values()) {
+//			listener.listeners().clear();
+//		}
 
 		fileWatcherThread = null;
 	}

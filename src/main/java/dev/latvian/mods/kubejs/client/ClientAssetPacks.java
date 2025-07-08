@@ -13,10 +13,10 @@ import dev.latvian.mods.kubejs.script.data.GeneratedDataStage;
 import dev.latvian.mods.kubejs.script.data.KubeFileResourcePack;
 import dev.latvian.mods.kubejs.script.data.VirtualAssetPack;
 import dev.latvian.mods.kubejs.util.JsonUtils;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.neoforged.fml.loading.FMLLoader;
 
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -145,7 +145,7 @@ public class ClientAssetPacks {
 			}
 		}
 
-		if (!FMLLoader.isProduction()) {
+		if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
 			KubeJS.LOGGER.info("Loaded " + packs.size() + " asset packs: " + packs.stream().map(PackResources::packId).collect(Collectors.joining(", ")));
 		}
 

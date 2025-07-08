@@ -8,7 +8,6 @@ import dev.latvian.mods.kubejs.plugin.builtin.event.ServerEvents;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.server.ScheduledServerEvent;
 import dev.latvian.mods.kubejs.server.ServerKubeEvent;
-import dev.latvian.mods.kubejs.server.ServerScriptManager;
 import dev.latvian.mods.kubejs.util.AttachedData;
 import dev.latvian.mods.kubejs.util.ScheduledEvents;
 import dev.latvian.mods.rhino.util.RemapForJS;
@@ -17,16 +16,12 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -141,8 +136,8 @@ public abstract class MinecraftServerMixin implements MinecraftServerKJS {
 	}
 
 	// There's a good chance this will break in the future, but currently that's the only reliable way to both inject packs and reload scripts before resources that I could find
-	@Redirect(method = "lambda$reloadResources$29", at = @At(value = "NEW", target = "(Lnet/minecraft/server/packs/PackType;Ljava/util/List;)Lnet/minecraft/server/packs/resources/MultiPackResourceManager;"))
-	private MultiPackResourceManager kjs$modifyResourceReload(PackType type, List<PackResources> original) {
-		return new MultiPackResourceManager(type, ServerScriptManager.createPackResources(original));
-	}
+//	@Redirect(method = "lambda$reloadResources$29", at = @At(value = "NEW", target = "(Lnet/minecraft/server/packs/PackType;Ljava/util/List;)Lnet/minecraft/server/packs/resources/MultiPackResourceManager;"))
+//	private MultiPackResourceManager kjs$modifyResourceReload(PackType type, List<PackResources> original) {
+//		return new MultiPackResourceManager(type, ServerScriptManager.createPackResources(original));
+//	}
 }

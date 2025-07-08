@@ -78,7 +78,10 @@ public abstract class RecipeManagerMixin implements RecipeManagerKJS {
 
 	@Inject(
 		method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V",
-		at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", shift = At.Shift.BEFORE)
+		at = @At(
+			value = "INVOKE",
+			target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V"
+		)
 	)
 	private void catchFailingRecipes(CallbackInfo ci, @Local Map.Entry<ResourceLocation, JsonElement> entry, @Local RuntimeException ex) {
 		if (kjs$event != null) {
