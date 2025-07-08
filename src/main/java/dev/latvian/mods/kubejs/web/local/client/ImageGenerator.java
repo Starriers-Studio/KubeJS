@@ -26,6 +26,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import me.textrue.kubejs.fabric.helper.TagHelper;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidStack;
+import me.textrue.kubejs.fabric.thirdparty.fluids.FluidType;
+import me.textrue.kubejs.fabric.thirdparty.fluids.extensions.ClientFluidTypeExtensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
@@ -37,21 +41,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -304,7 +301,7 @@ public class ImageGenerator {
 	}
 
 	public static CachedImage renderBlock(KJSHTTPRequest req, BlockState state, boolean wildcard) {
-		if (state.isEmpty()) {
+		if (state.is(Blocks.AIR) || state.is(Blocks.CAVE_AIR) || state.is(Blocks.VOID_AIR)) {
 			return new CachedImage(HTTPStatus.NOT_FOUND, null);
 		}
 
@@ -341,9 +338,11 @@ public class ImageGenerator {
 			ROTATED_BLOCK_TRANSFORM.apply(false, pose);
 			pose.translate(-0.5F, -0.5F, -0.5F);
 
-			for (var renderType : model.getRenderTypes(state, RandomSource.create(0L), ModelData.EMPTY)) {
-				render.mc.getBlockRenderer().renderSingleBlock(state, pose, render.graphics.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
-			}
+//			for (var renderType : model.getRenderTypes(state, RandomSource.create(0L), ModelData.EMPTY)) {
+//				render.mc.getBlockRenderer().renderSingleBlock(state, pose, render.graphics.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, renderType);
+//			}
+
+			render.mc.getBlockRenderer().renderSingleBlock(state, pose, render.graphics.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY);
 
 			try {
 				var fluidState = state.getFluidState();
@@ -376,7 +375,7 @@ public class ImageGenerator {
 			return new CachedImage(HTTPStatus.NOT_FOUND, null);
 		}
 
-		var fluidInfo = IClientFluidTypeExtensions.of(stack.getFluid());
+		var fluidInfo = ClientFluidTypeExtensions.of(stack.getFluid());
 		var still = fluidInfo.getStillTexture(stack);
 		var tint = fluidInfo.getTintColor(stack);
 		int a = 255;
@@ -402,7 +401,7 @@ public class ImageGenerator {
 	}
 
 	public static HTTPResponse itemTag(KJSHTTPRequest req) throws Exception {
-		var tag = BuiltInRegistries.ITEM.getTag(ItemTags.create(req.id()));
+		var tag = BuiltInRegistries.ITEM.getTag(TagHelper.createItemTag(req.id()));
 
 		if (tag.isEmpty()) {
 			return HTTPStatus.NOT_FOUND;
@@ -420,7 +419,7 @@ public class ImageGenerator {
 	}
 
 	public static HTTPResponse blockTag(KJSHTTPRequest req) throws Exception {
-		var tag = BuiltInRegistries.BLOCK.getTag(BlockTags.create(req.id()));
+		var tag = BuiltInRegistries.BLOCK.getTag(TagHelper.createBlockTag(req.id()));
 
 		if (tag.isEmpty()) {
 			return HTTPStatus.NOT_FOUND;
@@ -445,7 +444,7 @@ public class ImageGenerator {
 	}
 
 	public static HTTPResponse fluidTag(KJSHTTPRequest req) throws Exception {
-		var tag = BuiltInRegistries.FLUID.getTag(FluidTags.create(req.id()));
+		var tag = BuiltInRegistries.FLUID.getTag(TagHelper.createFluidTag(req.id()));
 
 		if (tag.isEmpty()) {
 			return HTTPStatus.NOT_FOUND;
